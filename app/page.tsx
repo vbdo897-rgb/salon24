@@ -43,7 +43,7 @@ export default function Home() {
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [service, setService] = useState("قص");
+  const [servicesSelected, setServicesSelected] = useState<string[]>([]);
   const [date, setDate] = useState(today);
   const [time, setTime] = useState("");
 
@@ -68,13 +68,23 @@ export default function Home() {
 
   const isSelectedDateFull = selectedDateBookings.length >= settings.maxPerDay;
 
+  const toggleService = (item: string) => {
+    setServicesSelected((current) =>
+      current.includes(item)
+        ? current.filter((x) => x !== item)
+        : [...current, item]
+    );
+  };
+
   const handleBooking = async () => {
     setMessage("");
     setLastBooking(null);
 
     if (!settings.bookingOpen) return setMessage("❌ الحجز مغلق حاليًا");
-    if (!name || !phone || !service || !date || !time)
-      return setMessage("❌ من فضلك املأ كل البيانات");
+
+    if (!name || !phone || servicesSelected.length === 0 || !date || !time) {
+      return setMessage("❌ من فضلك املأ كل البيانات واختار خدمة واحدة على الأقل");
+    }
 
     if (isSelectedDateFull)
       return setMessage("❌ لا يوجد مواعيد متاحة في هذا اليوم");
@@ -82,7 +92,13 @@ export default function Home() {
     const booked = await isSlotBooked(date, time);
     if (booked) return setMessage("❌ المعاد ده محجوز، اختار معاد تاني");
 
-    const bookingData = { name, phone, service, date, time };
+    const bookingData = {
+      name,
+      phone,
+      service: servicesSelected.join(" + "),
+      date,
+      time,
+    };
 
     try {
       setLoading(true);
@@ -93,6 +109,7 @@ export default function Home() {
       setMessage(`✅ تم الحجز بنجاح - معادك ${formatTime(time)}`);
       setName("");
       setPhone("");
+      setServicesSelected([]);
       setTime("");
     } catch {
       setMessage("❌ حصل خطأ أثناء الحجز");
@@ -120,7 +137,7 @@ export default function Home() {
 
   const whatsappLink = lastBooking
     ? `https://wa.me/2${lastBooking.phone}?text=${encodeURIComponent(
-        `تم تأكيد حجزك في Salon24\nالاسم: ${lastBooking.name}\nالخدمة: ${
+        `تم تأكيد حجزك في Salon24\nالاسم: ${lastBooking.name}\nالخدمات: ${
           lastBooking.service
         }\nاليوم: ${lastBooking.date}\nالساعة: ${formatTime(lastBooking.time)}`
       )}`
@@ -213,25 +230,36 @@ export default function Home() {
 
               <div>
                 <p className="mb-2 text-sm text-slate-300 font-bold">
-                  اختار الخدمة
+                  اختار الخدمات
                 </p>
 
                 <div className="grid grid-cols-2 gap-2">
-                  {services.map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => setService(s)}
-                      className={`p-3 rounded-2xl border text-sm font-bold transition ${
-                        service === s
-                          ? "border-[#d4af37] bg-[#d4af37]/20 text-[#fff3b0]"
-                          : "border-white/10 bg-black/25 text-slate-300"
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
+                  {services.map((s) => {
+                    const selected = servicesSelected.includes(s);
+
+                    return (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => toggleService(s)}
+                        className={`p-3 rounded-2xl border text-sm font-bold transition ${
+                          selected
+                            ? "border-[#d4af37] bg-[#d4af37]/20 text-[#fff3b0] shadow-[0_0_18px_rgba(212,175,55,0.18)]"
+                            : "border-white/10 bg-black/25 text-slate-300"
+                        }`}
+                      >
+                        {selected ? "✓ " : ""}
+                        {s}
+                      </button>
+                    );
+                  })}
                 </div>
+
+                {servicesSelected.length > 0 && (
+                  <p className="mt-2 text-xs text-[#fff3b0]">
+                    المختار: {servicesSelected.join(" + ")}
+                  </p>
+                )}
               </div>
 
               <input
@@ -328,7 +356,7 @@ export default function Home() {
                   </p>
 
                   <p>الاسم: {trackResult.name}</p>
-                  <p>الخدمة: {trackResult.service}</p>
+                  <p>الخدمات: {trackResult.service}</p>
                   <p>اليوم: {trackResult.date}</p>
                   <p>المعاد: {formatTime(trackResult.time)}</p>
                 </div>
