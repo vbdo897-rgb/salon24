@@ -41,6 +41,7 @@ export default function Admin() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [newPassword, setNewPassword] = useState("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const loadBookings = async () => {
     const data = await getBookings();
@@ -54,7 +55,6 @@ export default function Admin() {
 
   const login = () => {
     const adminPassword = settings?.adminPassword || "1234";
-
     if (code === adminPassword) setLogged(true);
     else alert("❌ كود غلط");
   };
@@ -96,7 +96,6 @@ export default function Admin() {
           (statusOrder[a.status] || 1) - (statusOrder[b.status] || 1);
 
         if (statusDiff !== 0) return statusDiff;
-
         return a.time.localeCompare(b.time);
       });
   };
@@ -110,7 +109,6 @@ export default function Admin() {
   );
 
   const selectedDateBookings = bookings.filter((b) => b.date === selectedDate);
-
   const filteredSelectedDateBookings = applyFilters(selectedDateBookings);
 
   const renderServices = (serviceText: string) => {
@@ -121,7 +119,7 @@ export default function Admin() {
         {items.map((s: string) => (
           <span
             key={s}
-            className="bg-yellow-500/15 text-yellow-300 border border-yellow-500/20 px-2 py-1 rounded-lg text-xs font-bold"
+            className="bg-[#d4af37]/15 text-[#fff3b0] border border-[#d4af37]/20 px-2 py-1 rounded-lg text-xs font-bold"
           >
             {s}
           </span>
@@ -133,7 +131,7 @@ export default function Admin() {
   const renderBookingCard = (b: any) => (
     <div
       key={b.id}
-      className="rounded-3xl border border-white/10 bg-slate-950/50 p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+      className="rounded-3xl border border-[#d4af37]/15 bg-black/35 p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
     >
       <div>
         <div className="flex items-center gap-2 mb-2">
@@ -160,7 +158,7 @@ export default function Admin() {
         <p className="text-slate-300 mt-1">الخدمات:</p>
         {renderServices(b.service)}
 
-        <p className="text-yellow-400 font-bold mt-2">
+        <p className="text-[#fff3b0] font-bold mt-2">
           {b.date} - {formatTime(b.time)}
         </p>
       </div>
@@ -221,22 +219,32 @@ export default function Admin() {
     return (
       <div
         dir="rtl"
-        className="min-h-screen flex items-center justify-center bg-[radial-gradient(circle_at_top,#24324f_0,#08111f_45%,#020617_100%)] text-white p-4"
+        className="min-h-screen flex items-center justify-center bg-[radial-gradient(circle_at_top,#18283f_0,#06111f_45%,#02040a_100%)] text-white p-4"
       >
-        <div className="w-full max-w-sm rounded-[2rem] border border-white/10 bg-white/10 backdrop-blur-xl p-6 shadow-2xl space-y-4">
-          <h1 className="text-3xl font-black text-center">Salon24 Admin</h1>
+        <div className="w-full max-w-sm rounded-[2rem] border border-[#d4af37]/20 bg-white/[0.07] backdrop-blur-xl p-6 shadow-2xl space-y-4">
+          <img
+            src="/logo.png"
+            alt="Salon24"
+            className="mx-auto w-24 h-24 object-cover rounded-3xl border border-[#d4af37]/25 shadow-[0_20px_60px_rgba(212,175,55,0.22)]"
+          />
+
+          <h1 className="text-4xl font-black text-center tracking-[0.15em] bg-gradient-to-r from-[#fff3b0] via-[#d4af37] to-[#8a641c] bg-clip-text text-transparent">
+            SALON 24
+          </h1>
+
+          <p className="text-center text-slate-400">لوحة التحكم</p>
 
           <input
             type="password"
             placeholder="كود الأدمن"
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            className="w-full p-4 bg-slate-950/60 border border-white/10 rounded-2xl outline-none focus:border-yellow-400"
+            className="w-full p-4 bg-black/35 border border-white/10 rounded-2xl outline-none focus:border-[#d4af37]"
           />
 
           <button
             onClick={login}
-            className="w-full bg-yellow-500 text-black p-4 rounded-2xl font-black"
+            className="w-full bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black p-4 rounded-2xl font-black"
           >
             دخول
           </button>
@@ -248,46 +256,233 @@ export default function Admin() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen bg-[radial-gradient(circle_at_top,#1e293b_0,#08111f_45%,#020617_100%)] text-white p-4"
+      className="min-h-screen bg-[radial-gradient(circle_at_top,#18283f_0,#06111f_45%,#02040a_100%)] text-white p-4 relative overflow-x-hidden"
     >
-      <div className="max-w-6xl mx-auto space-y-5">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div>
-            <h1 className="text-4xl font-black">لوحة تحكم Salon24</h1>
-            <p className="text-slate-400 mt-1">
-              إدارة الحجوزات والمواعيد اليومية
-            </p>
+      {settingsOpen && (
+        <div className="fixed inset-0 z-40">
+          <div
+            onClick={() => setSettingsOpen(false)}
+            className="absolute inset-0 bg-black/60"
+          />
+
+          <div className="absolute right-0 top-0 h-full w-full max-w-md bg-[#07111f] border-l border-[#d4af37]/20 p-5 overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-2xl font-black text-[#fff3b0]">
+                  إعدادات النظام
+                </h2>
+                <p className="text-slate-400 text-sm">
+                  الباسورد - العدد اليومي - المواعيد
+                </p>
+              </div>
+
+              <button
+                onClick={() => setSettingsOpen(false)}
+                className="bg-red-500 px-4 py-2 rounded-xl font-bold"
+              >
+                إغلاق
+              </button>
+            </div>
+
+            <div className="space-y-5">
+              <div className="rounded-3xl border border-[#d4af37]/15 bg-white/[0.06] p-4">
+                <p className="text-slate-300 mb-2 font-bold">
+                  تغيير باسورد الأدمن
+                </p>
+
+                <div className="flex gap-2">
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="p-4 bg-black/35 border border-white/10 flex-1 rounded-2xl outline-none focus:border-[#d4af37]"
+                    placeholder="باسورد جديد"
+                  />
+
+                  <button
+                    onClick={() => {
+                      if (!newPassword.trim()) {
+                        alert("اكتب باسورد جديد");
+                        return;
+                      }
+
+                      updateSettings({
+                        ...settings,
+                        adminPassword: newPassword.trim(),
+                      });
+
+                      setNewPassword("");
+                      alert("✅ تم تغيير باسورد الأدمن");
+                    }}
+                    className="bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black px-5 rounded-2xl font-black"
+                  >
+                    حفظ
+                  </button>
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-[#d4af37]/15 bg-white/[0.06] p-4">
+                <p className="text-slate-300 mb-2 font-bold">
+                  عدد الزباين يوميًا
+                </p>
+
+                <input
+                  type="number"
+                  value={settings.maxPerDay}
+                  onChange={(e) =>
+                    updateSettings({
+                      ...settings,
+                      maxPerDay: Number(e.target.value),
+                    })
+                  }
+                  className="p-4 bg-black/35 border border-white/10 w-full rounded-2xl outline-none focus:border-[#d4af37]"
+                  placeholder="عدد الحجوزات اليومي"
+                />
+              </div>
+
+              <button
+                onClick={() =>
+                  updateSettings({
+                    ...settings,
+                    bookingOpen: !settings.bookingOpen,
+                  })
+                }
+                className={`p-4 w-full rounded-2xl font-black ${
+                  settings.bookingOpen
+                    ? "bg-green-500 text-black"
+                    : "bg-red-500 text-white"
+                }`}
+              >
+                {settings.bookingOpen ? "الحجز مفتوح" : "الحجز مغلق"}
+              </button>
+
+              <div className="rounded-3xl border border-[#d4af37]/15 bg-white/[0.06] p-4">
+                <p className="text-slate-300 mb-2 font-bold">إضافة معاد جديد</p>
+
+                <div className="flex gap-2">
+                  <input
+                    type="time"
+                    value={newTime}
+                    onChange={(e) => setNewTime(e.target.value)}
+                    className="p-4 bg-black/35 border border-white/10 flex-1 rounded-2xl outline-none focus:border-[#d4af37]"
+                  />
+
+                  <button
+                    onClick={() => {
+                      if (!newTime) return;
+
+                      if (settings.timeSlots.includes(newTime)) {
+                        alert("المعاد موجود بالفعل");
+                        return;
+                      }
+
+                      updateSettings({
+                        ...settings,
+                        timeSlots: [...settings.timeSlots, newTime].sort(),
+                      });
+
+                      setNewTime("");
+                    }}
+                    className="bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black px-5 rounded-2xl font-black"
+                  >
+                    إضافة
+                  </button>
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-[#d4af37]/15 bg-white/[0.06] p-4">
+                <p className="text-slate-300 mb-3 font-bold">المواعيد الحالية</p>
+
+                <div className="grid grid-cols-2 gap-2">
+                  {settings.timeSlots.map((t: string) => (
+                    <div
+                      key={t}
+                      className="flex justify-between items-center bg-black/35 border border-white/10 p-3 rounded-2xl"
+                    >
+                      <span>{formatTime(t)}</span>
+
+                      <button
+                        onClick={() =>
+                          updateSettings({
+                            ...settings,
+                            timeSlots: settings.timeSlots.filter(
+                              (x: string) => x !== t
+                            ),
+                          })
+                        }
+                        className="bg-red-500 px-3 py-1 rounded-xl font-bold"
+                      >
+                        حذف
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-400">
+                أول باسورد افتراضي هو 1234، وبعد تغييره استخدم الباسورد الجديد.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-6xl mx-auto space-y-5 relative z-10">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-4">
+            <img
+              src="/logo.png"
+              alt="Salon24"
+              className="w-16 h-16 object-cover rounded-2xl border border-[#d4af37]/25 shadow-[0_15px_40px_rgba(212,175,55,0.18)]"
+            />
+
+            <div>
+              <h1 className="text-3xl md:text-4xl font-black tracking-[0.12em] bg-gradient-to-r from-[#fff3b0] via-[#d4af37] to-[#8a641c] bg-clip-text text-transparent">
+                SALON 24
+              </h1>
+              <p className="text-slate-400 text-sm">لوحة التحكم</p>
+            </div>
           </div>
 
           <button
+            onClick={() => setSettingsOpen(true)}
+            className="w-14 h-14 rounded-2xl border border-[#d4af37]/25 bg-white/[0.07] text-[#fff3b0] text-3xl font-black flex items-center justify-center"
+            title="الإعدادات"
+          >
+            ☰
+          </button>
+        </div>
+
+        <div className="flex justify-end">
+          <button
             onClick={refreshBookings}
-            className="bg-yellow-500 text-black px-5 py-3 rounded-2xl font-black"
+            className="bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black px-5 py-3 rounded-2xl font-black"
           >
             تحديث البيانات
           </button>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="bg-white/10 border border-white/10 backdrop-blur-xl p-5 rounded-3xl">
+          <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-3xl">
             <p className="text-slate-300">حجوزات اليوم</p>
             <p className="text-4xl font-black mt-2">
               {activeTodayBookings.length}
             </p>
           </div>
 
-          <div className="bg-white/10 border border-white/10 backdrop-blur-xl p-5 rounded-3xl">
+          <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-3xl">
             <p className="text-slate-300">الحد اليومي</p>
             <p className="text-4xl font-black mt-2">{settings.maxPerDay}</p>
           </div>
 
-          <div className="bg-white/10 border border-white/10 backdrop-blur-xl p-5 rounded-3xl">
+          <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-3xl">
             <p className="text-slate-300">المتبقي اليوم</p>
             <p className="text-4xl font-black mt-2">
               {settings.maxPerDay - activeTodayBookings.length}
             </p>
           </div>
 
-          <div className="bg-white/10 border border-white/10 backdrop-blur-xl p-5 rounded-3xl">
+          <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-3xl">
             <p className="text-slate-300">حالة الحجز</p>
             <p className="text-2xl font-black mt-3">
               {settings.bookingOpen ? "مفتوح" : "مغلق"}
@@ -295,8 +490,10 @@ export default function Admin() {
           </div>
         </div>
 
-        <div className="bg-white/10 border border-white/10 backdrop-blur-xl p-5 rounded-[2rem]">
-          <h2 className="text-2xl font-black mb-4">حجوزات اليوم</h2>
+        <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-[2rem]">
+          <h2 className="text-2xl font-black mb-4 text-[#fff3b0]">
+            حجوزات اليوم
+          </h2>
 
           {todayBookings.length === 0 ? (
             <p className="text-slate-400 text-center py-8">
@@ -307,10 +504,12 @@ export default function Admin() {
           )}
         </div>
 
-        <div className="bg-white/10 border border-white/10 backdrop-blur-xl p-5 rounded-[2rem]">
+        <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-[2rem]">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
             <div>
-              <h2 className="text-2xl font-black">عرض حجوزات تاريخ معين</h2>
+              <h2 className="text-2xl font-black text-[#fff3b0]">
+                عرض حجوزات تاريخ معين
+              </h2>
               <p className="text-slate-400 text-sm mt-1">
                 اختار تاريخ، وابحث بالاسم أو الرقم، وفلتر حسب الحالة
               </p>
@@ -320,7 +519,7 @@ export default function Admin() {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-slate-950/60 border border-white/10 p-4 rounded-2xl outline-none"
+              className="bg-black/35 border border-white/10 p-4 rounded-2xl outline-none focus:border-[#d4af37]"
             />
           </div>
 
@@ -329,13 +528,13 @@ export default function Admin() {
               placeholder="بحث بالاسم أو رقم الموبايل أو الخدمة"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-slate-950/60 border border-white/10 p-4 rounded-2xl outline-none focus:border-yellow-400"
+              className="bg-black/35 border border-white/10 p-4 rounded-2xl outline-none focus:border-[#d4af37]"
             />
 
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-slate-950/60 border border-white/10 p-4 rounded-2xl outline-none focus:border-yellow-400"
+              className="bg-black/35 border border-white/10 p-4 rounded-2xl outline-none focus:border-[#d4af37]"
             >
               <option value="all">كل الحالات</option>
               <option value="waiting">منتظر</option>
@@ -353,150 +552,6 @@ export default function Admin() {
               {filteredSelectedDateBookings.map(renderBookingCard)}
             </div>
           )}
-        </div>
-
-        <div className="bg-white/10 border border-white/10 backdrop-blur-xl p-5 rounded-[2rem] space-y-4">
-          <h2 className="text-2xl font-black">إعدادات النظام</h2>
-
-          <div className="grid md:grid-cols-2 gap-3">
-            <div>
-              <p className="text-slate-300 mb-2 font-bold">
-                عدد الزباين يوميًا
-              </p>
-              <input
-                type="number"
-                value={settings.maxPerDay}
-                onChange={(e) =>
-                  updateSettings({
-                    ...settings,
-                    maxPerDay: Number(e.target.value),
-                  })
-                }
-                className="p-4 bg-slate-950/60 border border-white/10 w-full rounded-2xl outline-none"
-                placeholder="عدد الحجوزات اليومي"
-              />
-            </div>
-
-            <div>
-              <p className="text-slate-300 mb-2 font-bold">
-                تغيير باسورد الأدمن
-              </p>
-              <div className="flex gap-2">
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="p-4 bg-slate-950/60 border border-white/10 flex-1 rounded-2xl outline-none"
-                  placeholder="باسورد جديد"
-                />
-
-                <button
-                  onClick={() => {
-                    if (!newPassword.trim()) {
-                      alert("اكتب باسورد جديد");
-                      return;
-                    }
-
-                    updateSettings({
-                      ...settings,
-                      adminPassword: newPassword.trim(),
-                    });
-
-                    setNewPassword("");
-                    alert("✅ تم تغيير باسورد الأدمن");
-                  }}
-                  className="bg-yellow-500 text-black px-5 rounded-2xl font-black"
-                >
-                  حفظ
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={() =>
-              updateSettings({
-                ...settings,
-                bookingOpen: !settings.bookingOpen,
-              })
-            }
-            className={`p-4 w-full rounded-2xl font-black ${
-              settings.bookingOpen
-                ? "bg-green-500 text-black"
-                : "bg-red-500 text-white"
-            }`}
-          >
-            {settings.bookingOpen ? "الحجز مفتوح" : "الحجز مغلق"}
-          </button>
-
-          <div>
-            <p className="text-slate-300 mb-2 font-bold">إضافة معاد جديد</p>
-
-            <div className="flex gap-2">
-              <input
-                type="time"
-                value={newTime}
-                onChange={(e) => setNewTime(e.target.value)}
-                className="p-4 bg-slate-950/60 border border-white/10 flex-1 rounded-2xl outline-none"
-              />
-
-              <button
-                onClick={() => {
-                  if (!newTime) return;
-
-                  if (settings.timeSlots.includes(newTime)) {
-                    alert("المعاد موجود بالفعل");
-                    return;
-                  }
-
-                  updateSettings({
-                    ...settings,
-                    timeSlots: [...settings.timeSlots, newTime].sort(),
-                  });
-
-                  setNewTime("");
-                }}
-                className="bg-yellow-500 text-black px-5 rounded-2xl font-black"
-              >
-                إضافة
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <p className="text-slate-300 mb-2 font-bold">
-              المواعيد الحالية
-            </p>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {settings.timeSlots.map((t: string) => (
-                <div
-                  key={t}
-                  className="flex justify-between items-center bg-slate-950/60 border border-white/10 p-3 rounded-2xl"
-                >
-                  <span>{formatTime(t)}</span>
-
-                  <button
-                    onClick={() =>
-                      updateSettings({
-                        ...settings,
-                        timeSlots: settings.timeSlots.filter(
-                          (x: string) => x !== t
-                        ),
-                      })
-                    }
-                    className="bg-red-500 px-3 py-1 rounded-xl font-bold"
-                  >
-                    حذف
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <p className="text-xs text-slate-400">
-            ملاحظة: أول باسورد افتراضي هو 1234، وبعد تغييره استخدم الباسورد الجديد.
-          </p>
         </div>
       </div>
     </div>
