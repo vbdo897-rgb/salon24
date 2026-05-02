@@ -79,30 +79,32 @@ export default function Admin() {
   const renderBookingCard = (b: any) => (
     <div
       key={b.id}
-      className="bg-slate-800 p-4 rounded-2xl flex flex-col md:flex-row md:items-center md:justify-between gap-3"
+      className="rounded-3xl border border-white/10 bg-slate-950/50 p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
     >
       <div>
-        <p className="text-xl font-bold">{b.name}</p>
+        <div className="flex items-center gap-2 mb-2">
+          <p className="text-xl font-black">{b.name}</p>
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-bold ${
+              b.status === "completed"
+                ? "bg-green-500/15 text-green-300"
+                : b.status === "cancelled"
+                ? "bg-red-500/15 text-red-300"
+                : "bg-blue-500/15 text-blue-300"
+            }`}
+          >
+            {b.status === "completed"
+              ? "تم"
+              : b.status === "cancelled"
+              ? "ملغي"
+              : "منتظر"}
+          </span>
+        </div>
+
         <p className="text-slate-300">📞 {b.phone}</p>
         <p className="text-slate-300">الخدمة: {b.service}</p>
         <p className="text-yellow-400 font-bold">
           {b.date} - {formatTime(b.time)}
-        </p>
-
-        <p
-          className={`font-bold ${
-            b.status === "completed"
-              ? "text-green-400"
-              : b.status === "cancelled"
-              ? "text-red-400"
-              : "text-blue-400"
-          }`}
-        >
-          {b.status === "completed"
-            ? "تم"
-            : b.status === "cancelled"
-            ? "ملغي"
-            : "منتظر"}
         </p>
       </div>
 
@@ -149,7 +151,7 @@ export default function Admin() {
             onClick={() => changeBookingStatus(b.id, "waiting")}
             className="bg-slate-600 text-white px-4 py-2 rounded-xl font-bold"
           >
-            إرجاع منتظر
+            إرجاع
           </button>
         )}
       </div>
@@ -160,22 +162,22 @@ export default function Admin() {
     return (
       <div
         dir="rtl"
-        className="min-h-screen flex items-center justify-center bg-slate-950 text-white p-4"
+        className="min-h-screen flex items-center justify-center bg-[radial-gradient(circle_at_top,#24324f_0,#08111f_45%,#020617_100%)] text-white p-4"
       >
-        <div className="w-full max-w-sm bg-slate-900 p-5 rounded-3xl space-y-4">
-          <h1 className="text-3xl font-bold text-center">Salon24 Admin</h1>
+        <div className="w-full max-w-sm rounded-[2rem] border border-white/10 bg-white/10 backdrop-blur-xl p-6 shadow-2xl space-y-4">
+          <h1 className="text-3xl font-black text-center">Salon24 Admin</h1>
 
           <input
             type="password"
             placeholder="كود الأدمن"
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            className="w-full p-3 bg-slate-800 rounded-xl outline-none"
+            className="w-full p-4 bg-slate-950/60 border border-white/10 rounded-2xl outline-none focus:border-yellow-400"
           />
 
           <button
             onClick={login}
-            className="w-full bg-yellow-500 text-black p-3 rounded-xl font-bold"
+            className="w-full bg-yellow-500 text-black p-4 rounded-2xl font-black"
           >
             دخول
           </button>
@@ -187,50 +189,53 @@ export default function Admin() {
   if (!settings) return null;
 
   return (
-    <div dir="rtl" className="min-h-screen bg-slate-950 text-white p-4">
-      <div className="max-w-5xl mx-auto space-y-5">
-        <h1 className="text-3xl font-bold">لوحة تحكم Salon24</h1>
+    <div dir="rtl" className="min-h-screen bg-[radial-gradient(circle_at_top,#1e293b_0,#08111f_45%,#020617_100%)] text-white p-4">
+      <div className="max-w-6xl mx-auto space-y-5">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <h1 className="text-4xl font-black">لوحة تحكم Salon24</h1>
+            <p className="text-slate-400 mt-1">إدارة الحجوزات والمواعيد اليومية</p>
+          </div>
+
+          <button
+            onClick={refreshBookings}
+            className="bg-yellow-500 text-black px-5 py-3 rounded-2xl font-black"
+          >
+            تحديث البيانات
+          </button>
+        </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="bg-slate-900 p-4 rounded-2xl">
-            <p className="text-slate-400">حجوزات اليوم</p>
-            <p className="text-3xl font-bold">{activeTodayBookings.length}</p>
+          <div className="bg-white/10 border border-white/10 backdrop-blur-xl p-5 rounded-3xl">
+            <p className="text-slate-300">حجوزات اليوم</p>
+            <p className="text-4xl font-black mt-2">{activeTodayBookings.length}</p>
           </div>
 
-          <div className="bg-slate-900 p-4 rounded-2xl">
-            <p className="text-slate-400">الحد اليومي</p>
-            <p className="text-3xl font-bold">{settings.maxPerDay}</p>
+          <div className="bg-white/10 border border-white/10 backdrop-blur-xl p-5 rounded-3xl">
+            <p className="text-slate-300">الحد اليومي</p>
+            <p className="text-4xl font-black mt-2">{settings.maxPerDay}</p>
           </div>
 
-          <div className="bg-slate-900 p-4 rounded-2xl">
-            <p className="text-slate-400">المتبقي اليوم</p>
-            <p className="text-3xl font-bold">
+          <div className="bg-white/10 border border-white/10 backdrop-blur-xl p-5 rounded-3xl">
+            <p className="text-slate-300">المتبقي اليوم</p>
+            <p className="text-4xl font-black mt-2">
               {settings.maxPerDay - activeTodayBookings.length}
             </p>
           </div>
 
-          <div className="bg-slate-900 p-4 rounded-2xl">
-            <p className="text-slate-400">حالة الحجز</p>
-            <p className="text-xl font-bold">
+          <div className="bg-white/10 border border-white/10 backdrop-blur-xl p-5 rounded-3xl">
+            <p className="text-slate-300">حالة الحجز</p>
+            <p className="text-2xl font-black mt-3">
               {settings.bookingOpen ? "مفتوح" : "مغلق"}
             </p>
           </div>
         </div>
 
-        <div className="bg-slate-900 p-4 rounded-3xl">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">حجوزات اليوم</h2>
-
-            <button
-              onClick={refreshBookings}
-              className="bg-slate-700 px-4 py-2 rounded-xl"
-            >
-              تحديث
-            </button>
-          </div>
+        <div className="bg-white/10 border border-white/10 backdrop-blur-xl p-5 rounded-[2rem]">
+          <h2 className="text-2xl font-black mb-4">حجوزات اليوم</h2>
 
           {todayBookings.length === 0 ? (
-            <p className="text-slate-400 text-center py-6">
+            <p className="text-slate-400 text-center py-8">
               لا توجد حجوزات اليوم
             </p>
           ) : (
@@ -240,10 +245,10 @@ export default function Admin() {
           )}
         </div>
 
-        <div className="bg-slate-900 p-4 rounded-3xl">
+        <div className="bg-white/10 border border-white/10 backdrop-blur-xl p-5 rounded-[2rem]">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
             <div>
-              <h2 className="text-2xl font-bold">عرض حجوزات تاريخ معين</h2>
+              <h2 className="text-2xl font-black">عرض حجوزات تاريخ معين</h2>
               <p className="text-slate-400 text-sm mt-1">
                 اختار تاريخ لعرض حجوزاته فقط
               </p>
@@ -253,12 +258,12 @@ export default function Admin() {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-slate-800 p-3 rounded-xl outline-none"
+              className="bg-slate-950/60 border border-white/10 p-4 rounded-2xl outline-none"
             />
           </div>
 
           {selectedDateBookings.length === 0 ? (
-            <p className="text-slate-400 text-center py-6">
+            <p className="text-slate-400 text-center py-8">
               لا توجد حجوزات في هذا التاريخ
             </p>
           ) : (
@@ -268,8 +273,8 @@ export default function Admin() {
           )}
         </div>
 
-        <div className="bg-slate-900 p-4 rounded-3xl space-y-4">
-          <h2 className="text-2xl font-bold">إعدادات الحجز</h2>
+        <div className="bg-white/10 border border-white/10 backdrop-blur-xl p-5 rounded-[2rem] space-y-4">
+          <h2 className="text-2xl font-black">إعدادات الحجز</h2>
 
           <input
             type="number"
@@ -280,7 +285,7 @@ export default function Admin() {
                 maxPerDay: Number(e.target.value),
               })
             }
-            className="p-3 bg-slate-800 w-full rounded-xl outline-none"
+            className="p-4 bg-slate-950/60 border border-white/10 w-full rounded-2xl outline-none"
             placeholder="عدد الحجوزات اليومي"
           />
 
@@ -291,7 +296,7 @@ export default function Admin() {
                 bookingOpen: !settings.bookingOpen,
               })
             }
-            className={`p-3 w-full rounded-xl font-bold ${
+            className={`p-4 w-full rounded-2xl font-black ${
               settings.bookingOpen
                 ? "bg-green-500 text-black"
                 : "bg-red-500 text-white"
@@ -305,7 +310,7 @@ export default function Admin() {
               type="time"
               value={newTime}
               onChange={(e) => setNewTime(e.target.value)}
-              className="p-3 bg-slate-800 flex-1 rounded-xl outline-none"
+              className="p-4 bg-slate-950/60 border border-white/10 flex-1 rounded-2xl outline-none"
             />
 
             <button
@@ -324,7 +329,7 @@ export default function Admin() {
 
                 setNewTime("");
               }}
-              className="bg-yellow-500 text-black px-4 rounded-xl font-bold"
+              className="bg-yellow-500 text-black px-5 rounded-2xl font-black"
             >
               إضافة
             </button>
@@ -334,7 +339,7 @@ export default function Admin() {
             {settings.timeSlots.map((t: string) => (
               <div
                 key={t}
-                className="flex justify-between items-center bg-slate-800 p-3 rounded-xl"
+                className="flex justify-between items-center bg-slate-950/60 border border-white/10 p-3 rounded-2xl"
               >
                 <span>{formatTime(t)}</span>
 
@@ -347,7 +352,7 @@ export default function Admin() {
                       ),
                     })
                   }
-                  className="bg-red-500 px-2 py-1 rounded-lg"
+                  className="bg-red-500 px-3 py-1 rounded-xl font-bold"
                 >
                   حذف
                 </button>

@@ -80,16 +80,9 @@ export default function Home() {
       return setMessage("❌ لا يوجد مواعيد متاحة في هذا اليوم");
 
     const booked = await isSlotBooked(date, time);
-
     if (booked) return setMessage("❌ المعاد ده محجوز، اختار معاد تاني");
 
-    const bookingData = {
-      name,
-      phone,
-      service,
-      date,
-      time,
-    };
+    const bookingData = { name, phone, service, date, time };
 
     try {
       setLoading(true);
@@ -134,179 +127,202 @@ export default function Home() {
     : "";
 
   return (
-    <div dir="rtl" className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-slate-900 rounded-3xl p-5">
-        <h1 className="text-4xl font-bold text-center mb-2">Salon24</h1>
+    <div
+      dir="rtl"
+      className="min-h-screen bg-[radial-gradient(circle_at_top,#24324f_0,#08111f_45%,#020617_100%)] text-white flex items-center justify-center p-4"
+    >
+      <div className="w-full max-w-md">
+        <div className="text-center mb-6">
+          <div className="mx-auto mb-4 h-24 w-24 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-700 p-[3px] shadow-2xl shadow-yellow-500/20">
+            <div className="h-full w-full rounded-full bg-slate-950 flex items-center justify-center">
+              <div className="text-center leading-none">
+                <p className="text-4xl font-black text-white">24</p>
+                <p className="text-[10px] tracking-[0.35em] text-yellow-400">SALON</p>
+              </div>
+            </div>
+          </div>
 
-        {isSelectedDateFull || !settings.bookingOpen ? (
-          <p className="text-center text-red-400 font-bold mb-2">
-            ❌ لا يوجد مواعيد متاحة اليوم
-          </p>
-        ) : (
-          <p className="text-center text-green-400 font-bold mb-2">
-            🔥 متاح الحجز الآن
-          </p>
-        )}
+          <h1 className="text-5xl font-black tracking-tight">Salon24</h1>
+          <p className="mt-2 text-slate-300">احجز ميعادك بسهولة وبدون انتظار</p>
 
-        <p className="text-center text-slate-400 mb-6">احجز ميعادك بسهولة</p>
-
-        <div className="grid grid-cols-2 gap-3 mb-5">
-          <button
-            onClick={() => {
-              setTab("book");
-              setMessage("");
-              setTrackResult(null);
-            }}
-            className={`p-3 rounded-xl font-bold ${
-              tab === "book" ? "bg-yellow-500 text-black" : "bg-slate-800"
-            }`}
-          >
-            حجز
-          </button>
-
-          <button
-            onClick={() => {
-              setTab("track");
-              setMessage("");
-              setLastBooking(null);
-            }}
-            className={`p-3 rounded-xl font-bold ${
-              tab === "track" ? "bg-yellow-500 text-black" : "bg-slate-800"
-            }`}
-          >
-            متابعة الحجز
-          </button>
+          {isSelectedDateFull || !settings.bookingOpen ? (
+            <p className="mt-4 inline-block rounded-full border border-red-500/40 bg-red-500/10 px-4 py-2 text-red-300 font-bold">
+              ❌ لا يوجد مواعيد متاحة اليوم
+            </p>
+          ) : (
+            <p className="mt-4 inline-block rounded-full border border-green-500/40 bg-green-500/10 px-4 py-2 text-green-300 font-bold">
+              🔥 متاح الحجز الآن
+            </p>
+          )}
         </div>
 
-        {tab === "book" && (
-          <div className="space-y-4">
-            <input
-              className="w-full p-3 rounded-xl bg-slate-800 outline-none"
-              placeholder="الاسم"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-
-            <input
-              className="w-full p-3 rounded-xl bg-slate-800 outline-none"
-              placeholder="رقم الموبايل"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-
-            <select
-              className="w-full p-3 rounded-xl bg-slate-800 outline-none"
-              value={service}
-              onChange={(e) => setService(e.target.value)}
+        <div className="rounded-[2rem] border border-white/10 bg-white/10 backdrop-blur-xl p-5 shadow-2xl">
+          <div className="grid grid-cols-2 gap-3 mb-5 rounded-2xl bg-slate-950/40 p-2">
+            <button
+              onClick={() => {
+                setTab("book");
+                setMessage("");
+                setTrackResult(null);
+              }}
+              className={`p-3 rounded-xl font-bold transition ${
+                tab === "book"
+                  ? "bg-yellow-500 text-black shadow-lg shadow-yellow-500/20"
+                  : "bg-transparent text-slate-300"
+              }`}
             >
-              {services.map((s) => (
-                <option key={s}>{s}</option>
-              ))}
-            </select>
+              حجز
+            </button>
 
-            <input
-              type="date"
-              min={today}
-              value={date}
-              onChange={(e) => {
-                setDate(e.target.value);
-                setTime("");
+            <button
+              onClick={() => {
+                setTab("track");
                 setMessage("");
                 setLastBooking(null);
               }}
-              className="w-full p-3 rounded-xl bg-slate-800 outline-none"
-            />
-
-            <select
-              className="w-full p-3 rounded-xl bg-slate-800 outline-none"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              disabled={isSelectedDateFull || !settings.bookingOpen}
+              className={`p-3 rounded-xl font-bold transition ${
+                tab === "track"
+                  ? "bg-yellow-500 text-black shadow-lg shadow-yellow-500/20"
+                  : "bg-transparent text-slate-300"
+              }`}
             >
-              <option value="">اختار المعاد</option>
-
-              {settings.timeSlots.map((slot) => {
-                const booked = bookings.some(
-                  (b) =>
-                    b.date === date &&
-                    b.time === slot &&
-                    b.status !== "cancelled"
-                );
-
-                return (
-                  <option key={slot} value={slot} disabled={booked}>
-                    {booked
-                      ? `${formatTime(slot)} - محجوز`
-                      : formatTime(slot)}
-                  </option>
-                );
-              })}
-            </select>
-
-            <button
-              onClick={handleBooking}
-              className="w-full p-3 rounded-xl bg-yellow-500 text-black font-bold disabled:opacity-50"
-              disabled={isSelectedDateFull || !settings.bookingOpen || loading}
-            >
-              {loading ? "جاري الحجز..." : "تأكيد الحجز"}
+              متابعة الحجز
             </button>
+          </div>
 
-            {lastBooking && (
-              <a
-                href={whatsappLink}
-                target="_blank"
-                className="block text-center w-full p-3 rounded-xl bg-green-500 text-black font-bold"
+          {tab === "book" && (
+            <div className="space-y-4">
+              <input
+                className="w-full p-4 rounded-2xl bg-slate-950/60 border border-white/10 outline-none focus:border-yellow-400"
+                placeholder="الاسم"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+
+              <input
+                className="w-full p-4 rounded-2xl bg-slate-950/60 border border-white/10 outline-none focus:border-yellow-400"
+                placeholder="رقم الموبايل"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+
+              <select
+                className="w-full p-4 rounded-2xl bg-slate-950/60 border border-white/10 outline-none focus:border-yellow-400"
+                value={service}
+                onChange={(e) => setService(e.target.value)}
               >
-                إرسال الحجز على واتساب
-              </a>
-            )}
-          </div>
-        )}
+                {services.map((s) => (
+                  <option key={s}>{s}</option>
+                ))}
+              </select>
 
-        {tab === "track" && (
-          <div className="space-y-4">
-            <input
-              className="w-full p-3 rounded-xl bg-slate-800 outline-none"
-              placeholder="اكتب رقم الموبايل"
-              value={trackPhone}
-              onChange={(e) => setTrackPhone(e.target.value)}
-            />
+              <input
+                type="date"
+                min={today}
+                value={date}
+                onChange={(e) => {
+                  setDate(e.target.value);
+                  setTime("");
+                  setMessage("");
+                  setLastBooking(null);
+                }}
+                className="w-full p-4 rounded-2xl bg-slate-950/60 border border-white/10 outline-none focus:border-yellow-400"
+              />
 
-            <button
-              onClick={handleTrack}
-              className="w-full p-3 rounded-xl bg-yellow-500 text-black font-bold"
-            >
-              عرض الحجز
-            </button>
+              <select
+                className="w-full p-4 rounded-2xl bg-slate-950/60 border border-white/10 outline-none focus:border-yellow-400 disabled:opacity-50"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                disabled={isSelectedDateFull || !settings.bookingOpen}
+              >
+                <option value="">اختار المعاد</option>
 
-            {trackResult && (
-              <div className="bg-slate-800 rounded-2xl p-4 text-center space-y-2">
-                <p
-                  className={`text-xl font-bold ${
-                    trackResult.status === "completed"
-                      ? "text-green-400"
-                      : trackResult.status === "cancelled"
-                      ? "text-red-400"
-                      : "text-blue-400"
-                  }`}
+                {settings.timeSlots.map((slot) => {
+                  const booked = bookings.some(
+                    (b) =>
+                      b.date === date &&
+                      b.time === slot &&
+                      b.status !== "cancelled"
+                  );
+
+                  return (
+                    <option key={slot} value={slot} disabled={booked}>
+                      {booked
+                        ? `${formatTime(slot)} - محجوز`
+                        : formatTime(slot)}
+                    </option>
+                  );
+                })}
+              </select>
+
+              <button
+                onClick={handleBooking}
+                className="w-full p-4 rounded-2xl bg-gradient-to-l from-yellow-400 to-yellow-600 text-black font-black shadow-xl shadow-yellow-500/20 disabled:opacity-50"
+                disabled={isSelectedDateFull || !settings.bookingOpen || loading}
+              >
+                {loading ? "جاري الحجز..." : "تأكيد الحجز"}
+              </button>
+
+              {lastBooking && (
+                <a
+                  href={whatsappLink}
+                  target="_blank"
+                  className="block text-center w-full p-4 rounded-2xl bg-green-500 text-black font-black"
                 >
-                  {trackResult.status === "completed"
-                    ? "✅ تم اكتمال حجزك"
-                    : trackResult.status === "cancelled"
-                    ? "❌ تم إلغاء حجزك"
-                    : "⏳ حجزك منتظر"}
-                </p>
+                  إرسال الحجز على واتساب
+                </a>
+              )}
+            </div>
+          )}
 
-                <p>الاسم: {trackResult.name}</p>
-                <p>الخدمة: {trackResult.service}</p>
-                <p>اليوم: {trackResult.date}</p>
-                <p>المعاد: {formatTime(trackResult.time)}</p>
-              </div>
-            )}
-          </div>
-        )}
+          {tab === "track" && (
+            <div className="space-y-4">
+              <input
+                className="w-full p-4 rounded-2xl bg-slate-950/60 border border-white/10 outline-none focus:border-yellow-400"
+                placeholder="اكتب رقم الموبايل"
+                value={trackPhone}
+                onChange={(e) => setTrackPhone(e.target.value)}
+              />
 
-        {message && <p className="text-center font-bold mt-4">{message}</p>}
+              <button
+                onClick={handleTrack}
+                className="w-full p-4 rounded-2xl bg-gradient-to-l from-yellow-400 to-yellow-600 text-black font-black"
+              >
+                عرض الحجز
+              </button>
+
+              {trackResult && (
+                <div className="bg-slate-950/60 border border-white/10 rounded-3xl p-5 text-center space-y-2">
+                  <p
+                    className={`text-xl font-black ${
+                      trackResult.status === "completed"
+                        ? "text-green-400"
+                        : trackResult.status === "cancelled"
+                        ? "text-red-400"
+                        : "text-blue-400"
+                    }`}
+                  >
+                    {trackResult.status === "completed"
+                      ? "✅ تم اكتمال حجزك"
+                      : trackResult.status === "cancelled"
+                      ? "❌ تم إلغاء حجزك"
+                      : "⏳ حجزك منتظر"}
+                  </p>
+
+                  <p>الاسم: {trackResult.name}</p>
+                  <p>الخدمة: {trackResult.service}</p>
+                  <p>اليوم: {trackResult.date}</p>
+                  <p>المعاد: {formatTime(trackResult.time)}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {message && (
+            <p className="text-center font-bold mt-5 rounded-2xl bg-slate-950/50 p-3">
+              {message}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
