@@ -15,9 +15,19 @@ const services = [
   "صبغة",
 ];
 
-const getTomorrow = () => {
+const isMonday = (dateStr: string) => {
+  const d = new Date(`${dateStr}T12:00:00`);
+  return d.getDay() === 1;
+};
+
+const getNextAvailableDate = () => {
   const d = new Date();
   d.setDate(d.getDate() + 1);
+
+  while (d.getDay() === 1) {
+    d.setDate(d.getDate() + 1);
+  }
+
   return d.toISOString().split("T")[0];
 };
 
@@ -35,7 +45,7 @@ const formatTime = (time: string) => {
 };
 
 export default function Home() {
-  const tomorrow = getTomorrow();
+  const minBookingDate = getNextAvailableDate();
 
   const [tab, setTab] = useState<"book" | "track">("book");
   const [settings, setSettings] = useState({
@@ -50,7 +60,7 @@ export default function Home() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [servicesSelected, setServicesSelected] = useState<string[]>([]);
-  const [date, setDate] = useState(tomorrow);
+  const [date, setDate] = useState(minBookingDate);
   const [time, setTime] = useState("");
 
   const [lastBooking, setLastBooking] = useState<any>(null);
@@ -92,8 +102,12 @@ export default function Home() {
       return setMessage("❌ من فضلك املأ كل البيانات واختار خدمة واحدة على الأقل");
     }
 
-    if (date < tomorrow) {
-      return setMessage("❌ الحجز متاح من بكرة فقط");
+    if (date < minBookingDate) {
+      return setMessage("❌ الحجز متاح من أقرب يوم عمل فقط");
+    }
+
+    if (isMonday(date)) {
+      return setMessage("❌ يوم الاتنين إجازة، اختار يوم تاني");
     }
 
     if (isSelectedDateFull)
@@ -145,14 +159,6 @@ export default function Home() {
     setTrackResult(booking);
   };
 
-  const whatsappLink = lastBooking
-    ? `https://wa.me/2${lastBooking.phone}?text=${encodeURIComponent(
-        `تم تأكيد حجزك في Salon24\nالاسم: ${lastBooking.name}\nالخدمات: ${
-          lastBooking.service
-        }\nاليوم: ${lastBooking.date}\nالساعة: ${formatTime(lastBooking.time)}`
-      )}`
-    : "";
-
   return (
     <div
       dir="rtl"
@@ -184,8 +190,13 @@ export default function Home() {
             </p>
           ) : (
             <p className="mt-4 inline-block rounded-full border border-[#d4af37]/40 bg-[#d4af37]/10 px-5 py-2 text-[#fff3b0] font-bold">
-            🔥 متاح الحجز الآن            </p>
+              🔥 متاح الحجز الآن
+            </p>
           )}
+
+          <p className="mt-2 text-xs text-slate-400">
+            ملاحظة: يوم الاتنين إجازة
+          </p>
         </div>
 
         <div className="rounded-[2rem] border border-[#d4af37]/20 bg-white/[0.07] backdrop-blur-xl p-5 shadow-2xl shadow-black/40">
@@ -273,10 +284,20 @@ export default function Home() {
 
               <input
                 type="date"
-                min={tomorrow}
+                min={minBookingDate}
                 value={date}
                 onChange={(e) => {
-                  setDate(e.target.value);
+                  const selected = e.target.value;
+
+                  if (isMonday(selected)) {
+                    setMessage("❌ يوم الاتنين إجازة، اختار يوم تاني");
+                    setDate(minBookingDate);
+                    setTime("");
+                    setLastBooking(null);
+                    return;
+                  }
+
+                  setDate(selected);
                   setTime("");
                   setMessage("");
                   setLastBooking(null);
@@ -288,7 +309,7 @@ export default function Home() {
                 className="w-full p-4 rounded-2xl bg-black/35 border border-white/10 outline-none focus:border-[#d4af37] disabled:opacity-50"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                disabled={isSelectedDateFull || !settings.bookingOpen}
+                disabled={isSelectedDateFull || !settings.bookingOpen || isMonday(date)}
               >
                 <option value="">اختار المعاد</option>
 
@@ -313,12 +334,15 @@ export default function Home() {
               <button
                 onClick={handleBooking}
                 className="w-full p-4 rounded-2xl bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black font-black shadow-xl shadow-yellow-500/20 disabled:opacity-50"
-                disabled={isSelectedDateFull || !settings.bookingOpen || loading}
+                disabled={
+                  isSelectedDateFull ||
+                  !settings.bookingOpen ||
+                  loading ||
+                  isMonday(date)
+                }
               >
                 {loading ? "جاري الحجز..." : "تأكيد الحجز"}
               </button>
-
-              
             </div>
           )}
 
