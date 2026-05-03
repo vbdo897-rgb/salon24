@@ -16,33 +16,60 @@ export type Settings = {
   maxPerDay: number;
   bookingOpen: boolean;
   timeSlots: string[];
+  adminPassword?: string;
 };
 
-const SETTINGS_KEY = "settings";
+const defaultSettings: Settings = {
+  maxPerDay: 20,
+  bookingOpen: true,
+  timeSlots: ["12:00", "13:00", "14:00", "15:00"],
+  adminPassword: "1234",
+};
 
-// ===== Settings =====
-export const getSettings = (): Settings => {
-  if (typeof window === "undefined") {
-    return {
-      maxPerDay: 20,
-      bookingOpen: true,
-      timeSlots: ["12:00", "12:30", "01:00"],
-    };
+// ===== Settings From Supabase =====
+export const getSettings = async (): Promise<Settings> => {
+  const { data, error } = await supabase
+    .from("settings")
+    .select("id, maxPerDay, bookingOpen, timeSlots, adminPassword")
+    .eq("id", "main")
+    .maybeSingle();
+
+  if (error) {
+    console.log("getSettings error:", error.message);
+    return defaultSettings;
   }
 
-  const data = localStorage.getItem(SETTINGS_KEY);
+  if (!data) {
+    await saveSettings(defaultSettings);
+    return defaultSettings;
+  }
 
-  return data
-    ? JSON.parse(data)
-    : {
-        maxPerDay: 20,
-        bookingOpen: true,
-        timeSlots: ["12:00", "12:30", "01:00"],
-      };
+  return {
+    maxPerDay: data.maxPerDay ?? defaultSettings.maxPerDay,
+    bookingOpen: data.bookingOpen ?? defaultSettings.bookingOpen,
+    timeSlots: Array.isArray(data.timeSlots)
+      ? data.timeSlots
+      : defaultSettings.timeSlots,
+    adminPassword: data.adminPassword ?? defaultSettings.adminPassword,
+  };
 };
 
-export const saveSettings = (settings: Settings) => {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+export const saveSettings = async (settings: Settings) => {
+  const { error } = await supabase.from("settings").upsert(
+    {
+      id: "main",
+      maxPerDay: settings.maxPerDay,
+      bookingOpen: settings.bookingOpen,
+      timeSlots: settings.timeSlots,
+      adminPassword: settings.adminPassword ?? "1234",
+    },
+    { onConflict: "id" }
+  );
+
+  if (error) {
+    console.log("saveSettings error:", error.message);
+    throw error;
+  }
 };
 
 // ===== Bookings From Supabase =====

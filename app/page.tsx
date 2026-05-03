@@ -74,9 +74,14 @@ export default function Home() {
   };
 
   useEffect(() => {
-    setSettings(getSettings());
-    loadBookings();
-  }, []);
+  const load = async () => {
+    const s = await getSettings();
+    setSettings(s);
+    await loadBookings();
+  };
+
+  load();
+}, []);
 
   const selectedDateBookings = bookings.filter(
     (b) => b.date === date && b.status !== "cancelled"

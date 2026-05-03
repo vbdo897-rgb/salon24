@@ -48,10 +48,15 @@ export default function Admin() {
     setBookings(data);
   };
 
-  useEffect(() => {
-    setSettings(getSettings());
-    loadBookings();
-  }, []);
+ useEffect(() => {
+  const load = async () => {
+    const s = await getSettings();
+    setSettings(s);
+    await loadBookings();
+  };
+
+  load();
+}, []);
 
   const login = () => {
     const adminPassword = settings?.adminPassword || "1234";
@@ -59,10 +64,15 @@ export default function Admin() {
     else alert("❌ كود غلط");
   };
 
-  const updateSettings = (s: any) => {
-    setSettings(s);
-    saveSettings(s);
-  };
+  const updateSettings = async (s: any) => {
+  setSettings(s);
+
+  try {
+    await saveSettings(s);
+  } catch {
+    alert("❌ حصل خطأ أثناء حفظ الإعدادات");
+  }
+};
 
   const refreshBookings = async () => {
     await loadBookings();
