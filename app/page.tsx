@@ -184,8 +184,7 @@ export default function Home() {
             </p>
           ) : (
             <p className="mt-4 inline-block rounded-full border border-[#d4af37]/40 bg-[#d4af37]/10 px-5 py-2 text-[#fff3b0] font-bold">
-              🔥 متاح الحجز من بكرة
-            </p>
+            🔥 متاح الحجز الآن            </p>
           )}
         </div>
 
@@ -319,15 +318,7 @@ export default function Home() {
                 {loading ? "جاري الحجز..." : "تأكيد الحجز"}
               </button>
 
-              {lastBooking && (
-                <a
-                  href={whatsappLink}
-                  target="_blank"
-                  className="block text-center w-full p-4 rounded-2xl bg-green-500 text-black font-black"
-                >
-                  إرسال الحجز على واتساب
-                </a>
-              )}
+              
             </div>
           )}
 
