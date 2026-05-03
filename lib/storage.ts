@@ -19,11 +19,32 @@ export type Settings = {
   adminPassword?: string;
 };
 
+export type Service = {
+  id: string;
+  name: string;
+  created_at?: string;
+};
+
 const defaultSettings: Settings = {
   maxPerDay: 20,
   bookingOpen: true,
   timeSlots: ["12:00", "13:00", "14:00", "15:00"],
   adminPassword: "1234",
+};
+
+// ===== Services From Supabase =====
+export const getServices = async (): Promise<Service[]> => {
+  const { data, error } = await supabase
+    .from("services")
+    .select("id, name, created_at")
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.log("getServices error:", error.message);
+    return [];
+  }
+
+  return data || [];
 };
 
 // ===== Settings From Supabase =====

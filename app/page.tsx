@@ -1,19 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { addBooking, getBookings, getSettings, isSlotBooked } from "@/lib/storage";
-
-const services = [
-  "قص",
-  "دقن ماكينة",
-  "دقن بالبخار",
-  "استشوار",
-  "تنضيف بشرة كامل",
-  "صنفرة",
-  "صنفرة بخار",
-  "واكس",
-  "صبغة",
-];
+import {
+  addBooking,
+  getBookings,
+  getSettings,
+  getServices,
+  isSlotBooked,
+} from "@/lib/storage";
 
 const isMonday = (dateStr: string) => {
   const d = new Date(`${dateStr}T12:00:00`);
@@ -48,6 +42,7 @@ export default function Home() {
   const minBookingDate = getNextAvailableDate();
 
   const [tab, setTab] = useState<"book" | "track">("book");
+  const [services, setServices] = useState<any[]>([]);
   const [settings, setSettings] = useState({
     maxPerDay: 20,
     bookingOpen: true,
@@ -74,14 +69,17 @@ export default function Home() {
   };
 
   useEffect(() => {
-  const load = async () => {
-    const s = await getSettings();
-    setSettings(s);
-    await loadBookings();
-  };
+    const load = async () => {
+      const s = await getSettings();
+      const servicesData = await getServices();
 
-  load();
-}, []);
+      setSettings(s);
+      setServices(servicesData);
+      await loadBookings();
+    };
+
+    load();
+  }, []);
 
   const selectedDateBookings = bookings.filter(
     (b) => b.date === date && b.status !== "cancelled"
@@ -259,25 +257,31 @@ export default function Home() {
                 </p>
 
                 <div className="grid grid-cols-2 gap-2">
-                  {services.map((s) => {
-                    const selected = servicesSelected.includes(s);
+                  {services.length === 0 ? (
+                    <p className="col-span-2 text-center text-slate-400 text-sm">
+                      جاري تحميل الخدمات...
+                    </p>
+                  ) : (
+                    services.map((s) => {
+                      const selected = servicesSelected.includes(s.name);
 
-                    return (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => toggleService(s)}
-                        className={`p-3 rounded-2xl border text-sm font-bold transition ${
-                          selected
-                            ? "border-[#d4af37] bg-[#d4af37]/20 text-[#fff3b0] shadow-[0_0_18px_rgba(212,175,55,0.18)]"
-                            : "border-white/10 bg-black/25 text-slate-300"
-                        }`}
-                      >
-                        {selected ? "✓ " : ""}
-                        {s}
-                      </button>
-                    );
-                  })}
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => toggleService(s.name)}
+                          className={`p-3 rounded-2xl border text-sm font-bold transition ${
+                            selected
+                              ? "border-[#d4af37] bg-[#d4af37]/20 text-[#fff3b0] shadow-[0_0_18px_rgba(212,175,55,0.18)]"
+                              : "border-white/10 bg-black/25 text-slate-300"
+                          }`}
+                        >
+                          {selected ? "✓ " : ""}
+                          {s.name}
+                        </button>
+                      );
+                    })
+                  )}
                 </div>
 
                 {servicesSelected.length > 0 && (
