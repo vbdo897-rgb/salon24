@@ -9,6 +9,8 @@ import {
   isSlotBooked,
 } from "@/lib/storage";
 
+const paymentMethods = ["كاش", "فودافون كاش", "إنستاباي"];
+
 const isMonday = (dateStr: string) => {
   const d = new Date(`${dateStr}T12:00:00`);
   return d.getDay() === 1;
@@ -55,10 +57,10 @@ export default function Home() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [servicesSelected, setServicesSelected] = useState<string[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState("");
   const [date, setDate] = useState(minBookingDate);
   const [time, setTime] = useState("");
 
-  const [lastBooking, setLastBooking] = useState<any>(null);
   const [trackPhone, setTrackPhone] = useState("");
   const [trackResult, setTrackResult] = useState<any>(null);
   const [message, setMessage] = useState("");
@@ -87,6 +89,11 @@ export default function Home() {
 
   const isSelectedDateFull = selectedDateBookings.length >= settings.maxPerDay;
 
+  const selectedTotal = servicesSelected.reduce((total, serviceName) => {
+    const item = services.find((s) => s.name === serviceName);
+    return total + Number(item?.price || 0);
+  }, 0);
+
   const toggleService = (item: string) => {
     setServicesSelected((current) =>
       current.includes(item)
@@ -97,12 +104,11 @@ export default function Home() {
 
   const handleBooking = async () => {
     setMessage("");
-    setLastBooking(null);
 
     if (!settings.bookingOpen) return setMessage("❌ الحجز مغلق حاليًا");
 
-    if (!name || !phone || servicesSelected.length === 0 || !date || !time) {
-      return setMessage("❌ من فضلك املأ كل البيانات واختار خدمة واحدة على الأقل");
+    if (!name || !phone || servicesSelected.length === 0 || !date || !time || !paymentMethod) {
+      return setMessage("❌ من فضلك املأ كل البيانات واختار خدمة وطريقة دفع");
     }
 
     if (date < minBookingDate) {
@@ -113,16 +119,24 @@ export default function Home() {
       return setMessage("❌ يوم الاتنين إجازة، اختار يوم تاني");
     }
 
-    if (isSelectedDateFull)
+    if (isSelectedDateFull) {
       return setMessage("❌ لا يوجد مواعيد متاحة في هذا اليوم");
+    }
 
     const booked = await isSlotBooked(date, time);
     if (booked) return setMessage("❌ المعاد ده محجوز، اختار معاد تاني");
 
+    const servicesText = servicesSelected
+      .map((serviceName) => {
+        const item = services.find((s) => s.name === serviceName);
+        return `${serviceName} (${Number(item?.price || 0)} جنيه)`;
+      })
+      .join(" + ");
+
     const bookingData = {
       name,
       phone,
-      service: servicesSelected.join(" + "),
+      service: `${servicesText} | الإجمالي: ${selectedTotal} جنيه | الدفع: ${paymentMethod}`,
       date,
       time,
     };
@@ -132,11 +146,11 @@ export default function Home() {
       await addBooking(bookingData);
       await loadBookings();
 
-      setLastBooking(bookingData);
-      setMessage(`✅ تم الحجز بنجاح - معادك ${formatTime(time)}`);
+      setMessage(`✅ تم الحجز بنجاح - الإجمالي ${selectedTotal} جنيه`);
       setName("");
       setPhone("");
       setServicesSelected([]);
+      setPaymentMethod("");
       setTime("");
     } catch {
       setMessage("❌ حصل خطأ أثناء الحجز");
@@ -212,7 +226,7 @@ export default function Home() {
               }}
               className={`p-3 rounded-xl font-black transition ${
                 tab === "book"
-                  ? "bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black shadow-lg shadow-yellow-500/20"
+                  ? "bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black"
                   : "bg-transparent text-slate-300"
               }`}
             >
@@ -223,11 +237,10 @@ export default function Home() {
               onClick={() => {
                 setTab("track");
                 setMessage("");
-                setLastBooking(null);
               }}
               className={`p-3 rounded-xl font-black transition ${
                 tab === "track"
-                  ? "bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black shadow-lg shadow-yellow-500/20"
+                  ? "bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black"
                   : "bg-transparent text-slate-300"
               }`}
             >
@@ -272,23 +285,55 @@ export default function Home() {
                           onClick={() => toggleService(s.name)}
                           className={`p-3 rounded-2xl border text-sm font-bold transition ${
                             selected
-                              ? "border-[#d4af37] bg-[#d4af37]/20 text-[#fff3b0] shadow-[0_0_18px_rgba(212,175,55,0.18)]"
+                              ? "border-[#d4af37] bg-[#d4af37]/20 text-[#fff3b0]"
                               : "border-white/10 bg-black/25 text-slate-300"
                           }`}
                         >
-                          {selected ? "✓ " : ""}
-                          {s.name}
+                          <span>{selected ? "✓ " : ""}{s.name}</span>
+                          <br />
+                          <span className="text-xs text-[#fff3b0]">
+                            {Number(s.price || 0)} جنيه
+                          </span>
                         </button>
                       );
                     })
                   )}
                 </div>
+              </div>
 
-                {servicesSelected.length > 0 && (
-                  <p className="mt-2 text-xs text-[#fff3b0]">
-                    المختار: {servicesSelected.join(" + ")}
+              {servicesSelected.length > 0 && (
+                <div className="rounded-2xl border border-[#d4af37]/20 bg-[#d4af37]/10 p-4">
+                  <p className="text-sm text-slate-300">المختار:</p>
+                  <p className="text-[#fff3b0] text-sm font-bold mt-1">
+                    {servicesSelected.join(" + ")}
                   </p>
-                )}
+                  <p className="text-2xl font-black text-[#fff3b0] mt-3">
+                    الإجمالي: {selectedTotal} جنيه
+                  </p>
+                </div>
+              )}
+
+              <div>
+                <p className="mb-2 text-sm text-slate-300 font-bold">
+                  طريقة الدفع
+                </p>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {paymentMethods.map((method) => (
+                    <button
+                      key={method}
+                      type="button"
+                      onClick={() => setPaymentMethod(method)}
+                      className={`p-3 rounded-2xl border text-sm font-bold transition ${
+                        paymentMethod === method
+                          ? "border-[#d4af37] bg-[#d4af37]/20 text-[#fff3b0]"
+                          : "border-white/10 bg-black/25 text-slate-300"
+                      }`}
+                    >
+                      {method}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <input
@@ -302,14 +347,12 @@ export default function Home() {
                     setMessage("❌ يوم الاتنين إجازة، اختار يوم تاني");
                     setDate(minBookingDate);
                     setTime("");
-                    setLastBooking(null);
                     return;
                   }
 
                   setDate(selected);
                   setTime("");
                   setMessage("");
-                  setLastBooking(null);
                 }}
                 className="w-full p-4 rounded-2xl bg-black/35 border border-white/10 outline-none focus:border-[#d4af37]"
               />
@@ -342,7 +385,7 @@ export default function Home() {
 
               <button
                 onClick={handleBooking}
-                className="w-full p-4 rounded-2xl bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black font-black shadow-xl shadow-yellow-500/20 disabled:opacity-50"
+                className="w-full p-4 rounded-2xl bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black font-black shadow-xl disabled:opacity-50"
                 disabled={
                   isSelectedDateFull ||
                   !settings.bookingOpen ||
