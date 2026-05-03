@@ -22,6 +22,7 @@ export type Settings = {
 export type Service = {
   id: string;
   name: string;
+  price: number;
   created_at?: string;
 };
 
@@ -36,7 +37,7 @@ const defaultSettings: Settings = {
 export const getServices = async (): Promise<Service[]> => {
   const { data, error } = await supabase
     .from("services")
-    .select("id, name, created_at")
+    .select("id, name, price, created_at")
     .order("created_at", { ascending: true });
 
   if (error) {
@@ -44,7 +45,54 @@ export const getServices = async (): Promise<Service[]> => {
     return [];
   }
 
-  return data || [];
+  return (data || []).map((s: any) => ({
+    id: s.id,
+    name: s.name,
+    price: Number(s.price || 0),
+    created_at: s.created_at,
+  }));
+};
+
+export const addService = async (name: string, price: number) => {
+  const { error } = await supabase.from("services").insert([
+    {
+      name,
+      price,
+    },
+  ]);
+
+  if (error) {
+    console.log("addService error:", error.message);
+    throw error;
+  }
+};
+
+export const updateService = async (
+  id: string,
+  name: string,
+  price: number
+) => {
+  const { error } = await supabase
+    .from("services")
+    .update({
+      name,
+      price,
+    })
+    .eq("id", id);
+
+  if (error) {
+    console.log("updateService error:", error.message);
+    throw error;
+  }
+};
+
+export const deleteService = async (id: string) => {
+  const { error } = await supabase.from("services").delete().eq("id", id);
+
+  if (error) {
+    console.log("deleteService error:", error.message);
+    throw error;
+  }
 };
 
 // ===== Settings From Supabase =====
