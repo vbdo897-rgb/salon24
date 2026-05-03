@@ -15,6 +15,12 @@ const services = [
   "صبغة",
 ];
 
+const getTomorrow = () => {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().split("T")[0];
+};
+
 const formatTime = (time: string) => {
   const [hour, minute] = time.split(":").map(Number);
   const dateObj = new Date();
@@ -29,7 +35,7 @@ const formatTime = (time: string) => {
 };
 
 export default function Home() {
-  const today = new Date().toISOString().split("T")[0];
+  const tomorrow = getTomorrow();
 
   const [tab, setTab] = useState<"book" | "track">("book");
   const [settings, setSettings] = useState({
@@ -44,7 +50,7 @@ export default function Home() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [servicesSelected, setServicesSelected] = useState<string[]>([]);
-  const [date, setDate] = useState(today);
+  const [date, setDate] = useState(tomorrow);
   const [time, setTime] = useState("");
 
   const [lastBooking, setLastBooking] = useState<any>(null);
@@ -84,6 +90,10 @@ export default function Home() {
 
     if (!name || !phone || servicesSelected.length === 0 || !date || !time) {
       return setMessage("❌ من فضلك املأ كل البيانات واختار خدمة واحدة على الأقل");
+    }
+
+    if (date < tomorrow) {
+      return setMessage("❌ الحجز متاح من بكرة فقط");
     }
 
     if (isSelectedDateFull)
@@ -170,11 +180,11 @@ export default function Home() {
 
           {isSelectedDateFull || !settings.bookingOpen ? (
             <p className="mt-4 inline-block rounded-full border border-red-500/40 bg-red-500/10 px-5 py-2 text-red-300 font-bold">
-              ❌ لا يوجد مواعيد متاحة اليوم
+              ❌ لا يوجد مواعيد متاحة في هذا اليوم
             </p>
           ) : (
             <p className="mt-4 inline-block rounded-full border border-[#d4af37]/40 bg-[#d4af37]/10 px-5 py-2 text-[#fff3b0] font-bold">
-              🔥 متاح الحجز الآن
+              🔥 متاح الحجز من بكرة
             </p>
           )}
         </div>
@@ -264,7 +274,7 @@ export default function Home() {
 
               <input
                 type="date"
-                min={today}
+                min={tomorrow}
                 value={date}
                 onChange={(e) => {
                   setDate(e.target.value);
