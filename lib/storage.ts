@@ -194,6 +194,39 @@ export const updateBookingStatus = async (
   return await getBookings();
 };
 
+export const deleteBooking = async (id: string) => {
+  const { error } = await supabase.from("bookings").delete().eq("id", id);
+
+  if (error) {
+    console.log("deleteBooking error:", error.message);
+    throw error;
+  }
+
+  return await getBookings();
+};
+
+export const deleteBookingsByDate = async (date: string) => {
+  const { error } = await supabase.from("bookings").delete().eq("date", date);
+
+  if (error) {
+    console.log("deleteBookingsByDate error:", error.message);
+    throw error;
+  }
+
+  return await getBookings();
+};
+
+export const deleteOldBookings = async (today: string) => {
+  const { error } = await supabase.from("bookings").delete().lt("date", today);
+
+  if (error) {
+    console.log("deleteOldBookings error:", error.message);
+    throw error;
+  }
+
+  return await getBookings();
+};
+
 // ===== Check Slot =====
 export const isSlotBooked = async (date: string, time: string) => {
   const { data, error } = await supabase

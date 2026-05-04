@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import {
   addService,
+  deleteBooking,
+  deleteBookingsByDate,
+  deleteOldBookings,
   deleteService,
   getBookings,
   getServices,
@@ -106,6 +109,45 @@ export default function Admin() {
     setBookings(updated);
   };
 
+  const handleDeleteBooking = async (id: string) => {
+    const ok = confirm("متأكد إنك عايز تحذف الحجز نهائيًا؟");
+    if (!ok) return;
+
+    try {
+      const updated = await deleteBooking(id);
+      setBookings(updated);
+      alert("✅ تم حذف الحجز");
+    } catch {
+      alert("❌ حصل خطأ أثناء حذف الحجز");
+    }
+  };
+
+  const handleClearSelectedDay = async () => {
+    const ok = confirm(`متأكد إنك عايز تحذف كل حجوزات يوم ${selectedDate}؟`);
+    if (!ok) return;
+
+    try {
+      const updated = await deleteBookingsByDate(selectedDate);
+      setBookings(updated);
+      alert("✅ تم تفريغ اليوم المحدد");
+    } catch {
+      alert("❌ حصل خطأ أثناء تفريغ اليوم");
+    }
+  };
+
+  const handleDeleteOldBookings = async () => {
+    const ok = confirm("متأكد إنك عايز تحذف كل الحجوزات القديمة؟");
+    if (!ok) return;
+
+    try {
+      const updated = await deleteOldBookings(today);
+      setBookings(updated);
+      alert("✅ تم حذف الحجوزات القديمة");
+    } catch {
+      alert("❌ حصل خطأ أثناء حذف الحجوزات القديمة");
+    }
+  };
+
   const handleAddService = async () => {
     if (!newServiceName.trim()) {
       alert("اكتب اسم الخدمة");
@@ -205,9 +247,9 @@ export default function Admin() {
 
     return (
       <div className="flex flex-wrap gap-1 mt-2">
-        {items.map((s: string) => (
+        {items.map((s: string, index: number) => (
           <span
-            key={s}
+            key={`${s}-${index}`}
             className="bg-[#d4af37]/15 text-[#fff3b0] border border-[#d4af37]/20 px-2 py-1 rounded-lg text-xs font-bold"
           >
             {s}
@@ -298,6 +340,13 @@ export default function Admin() {
             إرجاع
           </button>
         )}
+
+        <button
+          onClick={() => handleDeleteBooking(b.id)}
+          className="bg-black border border-red-500 text-red-400 px-4 py-2 rounded-xl font-bold"
+        >
+          حذف نهائي
+        </button>
       </div>
     </div>
   );
@@ -657,12 +706,26 @@ export default function Admin() {
           </button>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex flex-wrap justify-end gap-2">
           <button
             onClick={refreshBookings}
             className="bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black px-5 py-3 rounded-2xl font-black"
           >
             تحديث البيانات
+          </button>
+
+          <button
+            onClick={handleClearSelectedDay}
+            className="bg-red-600 text-white px-5 py-3 rounded-2xl font-black"
+          >
+            تفريغ اليوم المحدد
+          </button>
+
+          <button
+            onClick={handleDeleteOldBookings}
+            className="bg-black border border-red-500 text-red-400 px-5 py-3 rounded-2xl font-black"
+          >
+            حذف الحجوزات القديمة
           </button>
         </div>
 
