@@ -102,29 +102,40 @@ export default function Home() {
     );
   };
 
-  const handleBooking = async () => {
-    setMessage("");
+ const handleBooking = async () => {
+  if (loading) return;
 
-    if (!settings.bookingOpen) return setMessage("❌ الحجز مغلق حاليًا");
+  setMessage("");
 
-    if (!name || !phone || servicesSelected.length === 0 || !date || !time || !paymentMethod) {
-      return setMessage("❌ من فضلك املأ كل البيانات واختار خدمة وطريقة دفع");
-    }
+  if (!settings.bookingOpen) {
+    return setMessage("❌ الحجز مغلق حاليًا");
+  }
 
-    if (date < minBookingDate) {
-      return setMessage("❌ الحجز متاح من أقرب يوم عمل فقط");
-    }
+  if (!name || !phone || servicesSelected.length === 0 || !date || !time || !paymentMethod) {
+    return setMessage("❌ من فضلك املأ كل البيانات واختار خدمة وطريقة دفع");
+  }
 
-    if (isMonday(date)) {
-      return setMessage("❌ يوم الاتنين إجازة، اختار يوم تاني");
-    }
+  if (date < minBookingDate) {
+    return setMessage("❌ الحجز متاح من أقرب يوم عمل فقط");
+  }
 
-    if (isSelectedDateFull) {
-      return setMessage("❌ لا يوجد مواعيد متاحة في هذا اليوم");
-    }
+  if (isMonday(date)) {
+    return setMessage("❌ يوم الاتنين إجازة، اختار يوم تاني");
+  }
+
+  if (isSelectedDateFull) {
+    return setMessage("❌ لا يوجد مواعيد متاحة في هذا اليوم");
+  }
+
+  try {
+    setLoading(true);
 
     const booked = await isSlotBooked(date, time);
-    if (booked) return setMessage("❌ المعاد ده محجوز، اختار معاد تاني");
+    if (booked) {
+      setMessage("❌ المعاد ده محجوز، اختار معاد تاني");
+      await loadBookings();
+      return;
+    }
 
     const servicesText = servicesSelected
       .map((serviceName) => {
@@ -141,23 +152,21 @@ export default function Home() {
       time,
     };
 
-    try {
-      setLoading(true);
-      await addBooking(bookingData);
-      await loadBookings();
+    await addBooking(bookingData);
+    await loadBookings();
 
-      setMessage(`✅ تم الحجز بنجاح - الإجمالي ${selectedTotal} جنيه`);
-      setName("");
-      setPhone("");
-      setServicesSelected([]);
-      setPaymentMethod("");
-      setTime("");
-    } catch {
-      setMessage("❌ حصل خطأ أثناء الحجز");
-    } finally {
-      setLoading(false);
-    }
-  };
+    setMessage(`✅ تم الحجز بنجاح - الإجمالي ${selectedTotal} جنيه`);
+    setName("");
+    setPhone("");
+    setServicesSelected([]);
+    setPaymentMethod("");
+    setTime("");
+  } catch {
+    setMessage("❌ حصل خطأ أثناء الحجز");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleTrack = async () => {
     setMessage("");

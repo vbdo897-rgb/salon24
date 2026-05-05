@@ -93,23 +93,42 @@ export default function Admin() {
   }, []);
 
   const login = async () => {
-    if (!email.trim() || !password.trim()) {
-      alert("اكتب الإيميل والباسورد");
-      return;
-    }
+  if (!email.trim() || !password.trim()) {
+    alert("اكتب الإيميل والباسورد");
+    return;
+  }
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
+  const { error } = await supabase.auth.signInWithPassword({
+    email: email.trim(),
+    password,
+  });
 
-    if (error) {
-      alert("❌ الإيميل أو الباسورد غلط");
-      return;
-    }
+  if (error) {
+    alert("❌ الإيميل أو الباسورد غلط");
+    return;
+  }
 
-    setLogged(true);
-  };
+  setLogged(true);
+};
+
+// 👇 دي تضيفها بعد login مباشرة
+const resetPassword = async () => {
+  if (!email.trim()) {
+    alert("اكتب الإيميل الأول");
+    return;
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+    redirectTo: window.location.origin + "/admin",
+  });
+
+  if (error) {
+    alert("❌ حصل خطأ أثناء إرسال رسالة استرجاع الباسورد");
+    return;
+  }
+
+  alert("✅ تم إرسال رابط استرجاع الباسورد على الإيميل");
+};
 
   const logout = async () => {
     await supabase.auth.signOut();
@@ -434,6 +453,15 @@ export default function Admin() {
           >
             دخول
           </button>
+
+
+          <button
+  onClick={resetPassword}
+  className="w-full text-[#fff3b0] text-sm font-bold underline mt-2"
+>
+  نسيت الباسورد؟
+</button>
+
         </div>
       </div>
     );
