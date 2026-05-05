@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import {
   addService,
   deleteBooking,
@@ -39,13 +40,16 @@ export default function Admin() {
   const today = new Date().toISOString().split("T")[0];
 
   const [logged, setLogged] = useState(false);
-  const [code, setCode] = useState("");
+  const [authLoading, setAuthLoading] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   const [settings, setSettings] = useState<any>(null);
   const [bookings, setBookings] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
 
   const [newTime, setNewTime] = useState("");
-  const [selectedDate, setSelectedDate] = useState(today);
+  const [selectedDate, setSelectedDate] = useState("");
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -71,19 +75,47 @@ export default function Admin() {
 
   useEffect(() => {
     const load = async () => {
+      const { data } = await supabase.auth.getUser();
+
+      if (data.user) {
+        setLogged(true);
+      }
+
       const s = await getSettings();
       setSettings(s);
+
       await loadBookings();
       await loadServices();
+      setAuthLoading(false);
     };
 
     load();
   }, []);
 
-  const login = () => {
-    const adminPassword = settings?.adminPassword || "1234";
-    if (code === adminPassword) setLogged(true);
-    else alert("❌ كود غلط");
+  const login = async () => {
+    if (!email.trim() || !password.trim()) {
+      alert("اكتب الإيميل والباسورد");
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    if (error) {
+      alert("❌ الإيميل أو الباسورد غلط");
+      return;
+    }
+
+    setLogged(true);
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setLogged(false);
+    setEmail("");
+    setPassword("");
   };
 
   const updateSettings = async (s: any) => {
@@ -123,6 +155,11 @@ export default function Admin() {
   };
 
   const handleClearSelectedDay = async () => {
+    if (!selectedDate) {
+      alert("اختار تاريخ الأول");
+      return;
+    }
+
     const ok = confirm(`متأكد إنك عايز تحذف كل حجوزات يوم ${selectedDate}؟`);
     if (!ok) return;
 
@@ -239,7 +276,10 @@ export default function Admin() {
     (b) => b.status !== "cancelled"
   );
 
-  const selectedDateBookings = bookings.filter((b) => b.date === selectedDate);
+  const selectedDateBookings = selectedDate
+    ? bookings.filter((b) => b.date === selectedDate)
+    : [];
+
   const filteredSelectedDateBookings = applyFilters(selectedDateBookings);
 
   const renderServices = (serviceText: string) => {
@@ -351,7 +391,7 @@ export default function Admin() {
     </div>
   );
 
-  if (!settings) return null;
+  if (authLoading || !settings) return null;
 
   if (!logged) {
     return (
@@ -370,13 +410,21 @@ export default function Admin() {
             SALON 24
           </h1>
 
-          <p className="text-center text-slate-400">لوحة التحكم</p>
+          <p className="text-center text-slate-400">تسجيل دخول الأدمن</p>
+
+          <input
+            type="email"
+            placeholder="الإيميل"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full p-4 bg-black/35 border border-white/10 rounded-2xl outline-none focus:border-[#d4af37]"
+          />
 
           <input
             type="password"
-            placeholder="كود الأدمن"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
+            placeholder="الباسورد"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             className="w-full p-4 bg-black/35 border border-white/10 rounded-2xl outline-none focus:border-[#d4af37]"
           />
 
@@ -538,42 +586,6 @@ export default function Admin() {
 
               <div className="rounded-3xl border border-[#d4af37]/15 bg-white/[0.06] p-4">
                 <p className="text-slate-300 mb-2 font-bold">
-                  تغيير باسورد الأدمن
-                </p>
-
-                <div className="flex gap-2">
-                  <input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="p-4 bg-black/35 border border-white/10 flex-1 rounded-2xl outline-none focus:border-[#d4af37]"
-                    placeholder="باسورد جديد"
-                  />
-
-                  <button
-                    onClick={() => {
-                      if (!newPassword.trim()) {
-                        alert("اكتب باسورد جديد");
-                        return;
-                      }
-
-                      updateSettings({
-                        ...settings,
-                        adminPassword: newPassword.trim(),
-                      });
-
-                      setNewPassword("");
-                      alert("✅ تم تغيير باسورد الأدمن");
-                    }}
-                    className="bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black px-5 rounded-2xl font-black"
-                  >
-                    حفظ
-                  </button>
-                </div>
-              </div>
-
-              <div className="rounded-3xl border border-[#d4af37]/15 bg-white/[0.06] p-4">
-                <p className="text-slate-300 mb-2 font-bold">
                   عدد الزباين يوميًا
                 </p>
 
@@ -672,9 +684,12 @@ export default function Admin() {
                 </div>
               </div>
 
-              <p className="text-xs text-slate-400">
-                أول باسورد افتراضي هو 1234، وبعد تغييره استخدم الباسورد الجديد.
-              </p>
+              <button
+                onClick={logout}
+                className="w-full bg-black border border-red-500 text-red-400 p-4 rounded-2xl font-black"
+              >
+                تسجيل خروج
+              </button>
             </div>
           </div>
         </div>
@@ -718,7 +733,7 @@ export default function Admin() {
             onClick={handleClearSelectedDay}
             className="bg-red-600 text-white px-5 py-3 rounded-2xl font-black"
           >
-            تفريغ اليوم المحدد
+            تفريغ التاريخ المحدد
           </button>
 
           <button
@@ -780,7 +795,7 @@ export default function Admin() {
                 عرض حجوزات تاريخ معين
               </h2>
               <p className="text-slate-400 text-sm mt-1">
-                اختار تاريخ، وابحث بالاسم أو الرقم، وفلتر حسب الحالة
+                اختار تاريخ مختلف عن اليوم عشان يظهر هنا
               </p>
             </div>
 
@@ -792,34 +807,44 @@ export default function Admin() {
             />
           </div>
 
-          <div className="grid md:grid-cols-2 gap-3 mb-4">
-            <input
-              placeholder="بحث بالاسم أو رقم الموبايل أو الخدمة"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="bg-black/35 border border-white/10 p-4 rounded-2xl outline-none focus:border-[#d4af37]"
-            />
+          {selectedDate && (
+            <>
+              <div className="grid md:grid-cols-2 gap-3 mb-4">
+                <input
+                  placeholder="بحث بالاسم أو رقم الموبايل أو الخدمة"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="bg-black/35 border border-white/10 p-4 rounded-2xl outline-none focus:border-[#d4af37]"
+                />
 
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-black/35 border border-white/10 p-4 rounded-2xl outline-none focus:border-[#d4af37]"
-            >
-              <option value="all">كل الحالات</option>
-              <option value="waiting">منتظر</option>
-              <option value="completed">تم</option>
-              <option value="cancelled">ملغي</option>
-            </select>
-          </div>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="bg-black/35 border border-white/10 p-4 rounded-2xl outline-none focus:border-[#d4af37]"
+                >
+                  <option value="all">كل الحالات</option>
+                  <option value="waiting">منتظر</option>
+                  <option value="completed">تم</option>
+                  <option value="cancelled">ملغي</option>
+                </select>
+              </div>
 
-          {filteredSelectedDateBookings.length === 0 ? (
+              {filteredSelectedDateBookings.length === 0 ? (
+                <p className="text-slate-400 text-center py-8">
+                  لا توجد حجوزات مطابقة
+                </p>
+              ) : (
+                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+                  {filteredSelectedDateBookings.map(renderBookingCard)}
+                </div>
+              )}
+            </>
+          )}
+
+          {!selectedDate && (
             <p className="text-slate-400 text-center py-8">
-              لا توجد حجوزات مطابقة
+              اختار تاريخ لعرض الحجوزات القديمة أو القادمة
             </p>
-          ) : (
-            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
-              {filteredSelectedDateBookings.map(renderBookingCard)}
-            </div>
           )}
         </div>
       </div>
