@@ -119,10 +119,11 @@ const resetPassword = async () => {
   }
 
   const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-redirectTo: "https://salon24-beryl.vercel.app/reset-password",  });
+    redirectTo: "https://salon24-beryl.vercel.app/reset-password",
+  });
 
   if (error) {
-    alert("❌ حصل خطأ أثناء إرسال رسالة استرجاع الباسورد");
+    alert(error.message);
     return;
   }
 
