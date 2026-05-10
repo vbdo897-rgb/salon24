@@ -24,3 +24,29 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+button:not(:disabled) {
+  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
+}
+
+button:not(:disabled):hover {
+  filter: brightness(1.08);
+}
+
+button:not(:disabled):active {
+  transform: scale(0.96);
+  filter: brightness(0.92);
+}
+
+a:not(:disabled) {
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+a:not(:disabled):hover {
+  filter: brightness(1.08);
+}
+
+a:not(:disabled):active {
+  transform: scale(0.96);
+  filter: brightness(0.92);
+}
