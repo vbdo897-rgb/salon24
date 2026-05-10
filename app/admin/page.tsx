@@ -92,6 +92,27 @@ export default function Admin() {
     load();
   }, []);
 
+  useEffect(() => {
+  const channel = supabase
+    .channel("bookings-live")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "bookings",
+      },
+      async () => {
+        await loadBookings();
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
+
   const login = async () => {
   if (!email.trim() || !password.trim()) {
     alert("اكتب الإيميل والباسورد");
