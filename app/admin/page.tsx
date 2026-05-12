@@ -98,6 +98,31 @@ export default function Admin() {
     .on(
       "postgres_changes",
       {
+        event: "INSERT",
+        schema: "public",
+        table: "bookings",
+      },
+      async () => {
+        const audio = new Audio("/notification.mp3");
+        audio.volume = 0.7;
+        audio.play().catch(() => {});
+
+        await loadBookings();
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
+
+  useEffect(() => {
+  const channel = supabase
+    .channel("bookings-live")
+    .on(
+      "postgres_changes",
+      {
         event: "*",
         schema: "public",
         table: "bookings",
@@ -777,6 +802,16 @@ const resetPassword = async () => {
           >
             تحديث البيانات
           </button>
+
+          <button
+  onClick={() => {
+    const audio = new Audio("/notification.mp3");
+    audio.play();
+  }}
+  className="bg-yellow-500 text-black px-4 py-2 rounded-xl font-bold"
+>
+  تجربة الصوت
+</button>
 
           <button
             onClick={handleClearSelectedDay}
