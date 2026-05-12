@@ -92,30 +92,7 @@ export default function Admin() {
     load();
   }, []);
 
-  useEffect(() => {
-  const channel = supabase
-    .channel("bookings-live")
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "bookings",
-      },
-      () => {
-        const audio = new Audio("/notification.mp3");
 
-        audio.play().catch(() => {});
-
-        loadBookings();
-      }
-    )
-    .subscribe();
-
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}, []);
 
   useEffect(() => {
   const channel = supabase
