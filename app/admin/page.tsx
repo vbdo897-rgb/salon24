@@ -102,12 +102,12 @@ export default function Admin() {
         schema: "public",
         table: "bookings",
       },
-      async () => {
+      () => {
         const audio = new Audio("/notification.mp3");
-        audio.volume = 0.7;
+
         audio.play().catch(() => {});
 
-        await loadBookings();
+        loadBookings();
       }
     )
     .subscribe();
