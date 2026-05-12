@@ -94,17 +94,23 @@ export default function Admin() {
 
 
 
-  useEffect(() => {
+useEffect(() => {
   const channel = supabase
-    .channel("bookings-live")
+    .channel("bookings-live-admin")
     .on(
       "postgres_changes",
       {
-        event: "*",
+        event: "INSERT",
         schema: "public",
         table: "bookings",
       },
       async () => {
+        try {
+          const audio = new Audio("/notification.mp3");
+          audio.volume = 0.7;
+          await audio.play();
+        } catch {}
+
         await loadBookings();
       }
     )
