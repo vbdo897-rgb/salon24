@@ -818,6 +818,15 @@ const resetPassword = async () => {
           </button>
         </div>
         
+        <button
+  onClick={() => {
+    const audio = new Audio("/notification.mp3");
+    audio.play();
+  }}
+  className="bg-yellow-500 text-black px-4 py-2 rounded-xl font-bold"
+>
+  تجربة الصوت
+</button>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-3xl">
