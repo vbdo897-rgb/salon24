@@ -330,7 +330,7 @@ const resetPassword = async () => {
 
   const filteredSelectedDateBookings = applyFilters(selectedDateBookings);
 
-  const getBookingTotal = (serviceText: string) => {
+ const getBookingTotal = (serviceText: string) => {
   const match = serviceText?.match(/الإجمالي:\s*(\d+)/);
   return match ? Number(match[1]) : 0;
 };
@@ -379,12 +379,11 @@ const topServiceName = (() => {
   });
 
   const sorted = Object.entries(counts).sort(
-    (a: any, b: any) => b[1] - a[1]
+    (a: any, b: any) => Number(b[1]) - Number(a[1])
   );
 
   return sorted[0]?.[0] || "لا يوجد";
 })();
-
   const renderServices = (serviceText: string) => {
     const items = serviceText?.split(" + ") || [];
 
