@@ -330,6 +330,61 @@ const resetPassword = async () => {
 
   const filteredSelectedDateBookings = applyFilters(selectedDateBookings);
 
+  const getBookingTotal = (serviceText: string) => {
+  const match = serviceText?.match(/الإجمالي:\s*(\d+)/);
+  return match ? Number(match[1]) : 0;
+};
+
+const completedBookings = bookings.filter((b) => b.status === "completed");
+
+const todayCompletedBookings = completedBookings.filter(
+  (b) => b.date === today
+);
+
+const monthKey = today.slice(0, 7);
+
+const monthCompletedBookings = completedBookings.filter((b) =>
+  b.date?.startsWith(monthKey)
+);
+
+const todayRevenue = todayCompletedBookings.reduce(
+  (total, b) => total + getBookingTotal(b.service),
+  0
+);
+
+const monthRevenue = monthCompletedBookings.reduce(
+  (total, b) => total + getBookingTotal(b.service),
+  0
+);
+
+const cancelledToday = todayBookings.filter(
+  (b) => b.status === "cancelled"
+).length;
+
+const topServiceName = (() => {
+  const counts: any = {};
+
+  bookings.forEach((b) => {
+    if (!b.service) return;
+
+    const beforeTotal = b.service.split("|")[0];
+    const items = beforeTotal.split(" + ");
+
+    items.forEach((item: string) => {
+      const cleanName = item.replace(/\(.*?\)/g, "").trim();
+      if (!cleanName) return;
+
+      counts[cleanName] = (counts[cleanName] || 0) + 1;
+    });
+  });
+
+  const sorted = Object.entries(counts).sort(
+    (a: any, b: any) => b[1] - a[1]
+  );
+
+  return sorted[0]?.[0] || "لا يوجد";
+})();
+
   const renderServices = (serviceText: string) => {
     const items = serviceText?.split(" + ") || [];
 
@@ -800,44 +855,50 @@ const resetPassword = async () => {
             حذف الحجوزات القديمة
           </button>
         </div>
-        
-        <button
-  onClick={() => {
-    const audio = new Audio("/notification.mp3");
-    audio.play();
-  }}
-  className="bg-yellow-500 text-black px-4 py-2 rounded-xl font-bold"
->
-  تجربة الصوت
-</button>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-3xl">
-            <p className="text-slate-300">حجوزات اليوم</p>
-            <p className="text-4xl font-black mt-2">
-              {activeTodayBookings.length}
-            </p>
-          </div>
+       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+  <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-3xl">
+    <p className="text-slate-300">حجوزات اليوم</p>
+    <p className="text-4xl font-black mt-2">
+      {activeTodayBookings.length}
+    </p>
+  </div>
 
-          <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-3xl">
-            <p className="text-slate-300">الحد اليومي</p>
-            <p className="text-4xl font-black mt-2">{settings.maxPerDay}</p>
-          </div>
+  <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-3xl">
+    <p className="text-slate-300">أرباح اليوم</p>
+    <p className="text-3xl font-black mt-2 text-[#fff3b0]">
+      {todayRevenue} ج
+    </p>
+  </div>
 
-          <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-3xl">
-            <p className="text-slate-300">المتبقي اليوم</p>
-            <p className="text-4xl font-black mt-2">
-              {settings.maxPerDay - activeTodayBookings.length}
-            </p>
-          </div>
+  <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-3xl">
+    <p className="text-slate-300">أرباح الشهر</p>
+    <p className="text-3xl font-black mt-2 text-[#fff3b0]">
+      {monthRevenue} ج
+    </p>
+  </div>
 
-          <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-3xl">
-            <p className="text-slate-300">حالة الحجز</p>
-            <p className="text-2xl font-black mt-3">
-              {settings.bookingOpen ? "مفتوح" : "مغلق"}
-            </p>
-          </div>
-        </div>
+  <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-3xl">
+    <p className="text-slate-300">المتبقي اليوم</p>
+    <p className="text-4xl font-black mt-2">
+      {settings.maxPerDay - activeTodayBookings.length}
+    </p>
+  </div>
+
+  <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-3xl">
+    <p className="text-slate-300">إلغاءات اليوم</p>
+    <p className="text-4xl font-black mt-2 text-red-300">
+      {cancelledToday}
+    </p>
+  </div>
+
+  <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-3xl">
+    <p className="text-slate-300">الأكثر طلبًا</p>
+    <p className="text-lg font-black mt-3 text-[#fff3b0]">
+      {topServiceName}
+    </p>
+  </div>
+</div>
 
         <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-[2rem]">
           <h2 className="text-2xl font-black mb-4 text-[#fff3b0]">
