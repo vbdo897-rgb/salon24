@@ -823,13 +823,24 @@ const topServiceName = (() => {
             </div>
           </div>
 
-          <button
-            onClick={() => setSettingsOpen(true)}
-            className="w-14 h-14 rounded-2xl border border-[#d4af37]/25 bg-white/[0.07] text-[#fff3b0] text-3xl font-black flex items-center justify-center"
-            title="الإعدادات"
-          >
-            ☰
-          </button>
+         <div className="flex items-center gap-2">
+
+  <a
+    href="/admin/reports"
+    className="bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black px-5 py-3 rounded-2xl font-black"
+  >
+    التقارير
+  </a>
+
+  <button
+    onClick={() => setSettingsOpen(true)}
+    className="w-14 h-14 rounded-2xl border border-[#d4af37]/25 bg-white/[0.07] text-[#fff3b0] text-3xl font-black flex items-center justify-center"
+    title="الإعدادات"
+  >
+    ☰
+  </button>
+
+</div>
         </div>
 
         <div className="flex flex-wrap justify-end gap-2">

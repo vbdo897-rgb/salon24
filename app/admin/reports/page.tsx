@@ -90,6 +90,13 @@ export default function ReportsPage() {
           <p className="text-slate-400 mt-2">
             Dashboard خاصة بالأرباح والحجوزات
           </p>
+
+          <a
+  href="/admin"
+  className="inline-block mt-4 bg-black/35 border border-[#d4af37]/20 text-[#fff3b0] px-5 py-3 rounded-2xl font-black"
+>
+  رجوع للأدمن
+</a>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
