@@ -2,11 +2,19 @@
   "name": "Salon24 Admin",
   "short_name": "S24 Admin",
   "description": "Salon24 Admin Dashboard",
+
   "start_url": "/admin",
+
+  "scope": "/admin/",
+
   "display": "standalone",
+
   "background_color": "#02040a",
+
   "theme_color": "#d4af37",
+
   "orientation": "portrait",
+
   "icons": [
     {
       "src": "/logo.png",
