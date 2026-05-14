@@ -847,7 +847,8 @@ const topServiceName = (() => {
 
 
           <button
-  onClick={async () => {
+ onClick={async () => {
+  try {
     if (!("Notification" in window)) {
       alert("المتصفح لا يدعم الإشعارات");
       return;
@@ -860,12 +861,36 @@ const topServiceName = (() => {
       return;
     }
 
-    if ("serviceWorker" in navigator) {
-      await navigator.serviceWorker.register("/sw.js");
-    }
+    const registration = await navigator.serviceWorker.register("/sw.js");
 
-    alert("✅ تم تفعيل الإشعارات");
-  }}
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+
+      applicationServerKey: Uint8Array.from(
+        atob(
+          process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!.replace(/-/g, "+").replace(/_/g, "/")
+        ),
+        (c) => c.charCodeAt(0)
+      ),
+    });
+
+    await fetch("/api/save-subscription", {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+      body: JSON.stringify({
+        subscription,
+      }),
+    });
+
+    alert("✅ تم تفعيل الإشعارات بنجاح");
+  } catch (e) {
+    alert("❌ حصل خطأ أثناء تفعيل الإشعارات");
+  }
+}}
   className="bg-green-500 text-black px-5 py-3 rounded-2xl font-black"
 >
   تفعيل الإشعارات
