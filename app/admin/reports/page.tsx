@@ -2,6 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getBookings } from "@/lib/storage";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 
 const formatTime = (time: string) => {
   const [hour, minute] = time.split(":").map(Number);
@@ -17,7 +28,6 @@ const formatTime = (time: string) => {
 };
 
 const getToday = () => new Date().toISOString().split("T")[0];
-
 const getMonth = () => getToday().slice(0, 7);
 
 export default function ReportsPage() {
@@ -50,14 +60,9 @@ export default function ReportsPage() {
       .sort((a, b) => b.date.localeCompare(a.date));
   }, [bookings, fromDate, toDate, statusFilter]);
 
-  const completedBookings = filteredBookings.filter(
-    (b) => b.status === "completed"
-  );
-
+  const completedBookings = filteredBookings.filter((b) => b.status === "completed");
   const waitingBookings = filteredBookings.filter((b) => b.status === "waiting");
-  const cancelledBookings = filteredBookings.filter(
-    (b) => b.status === "cancelled"
-  );
+  const cancelledBookings = filteredBookings.filter((b) => b.status === "cancelled");
 
   const totalRevenue = completedBookings.reduce(
     (sum, b) => sum + getBookingTotal(b.service),
@@ -126,12 +131,13 @@ export default function ReportsPage() {
     );
   })() as any[];
 
-  const maxDailyRevenue = Math.max(
-    1,
-    ...dailyStats.map((d) => Number(d.revenue || 0))
-  );
+  const statusData = [
+    { name: "مكتملة", value: completedBookings.length },
+    { name: "منتظرة", value: waitingBookings.length },
+    { name: "ملغية", value: cancelledBookings.length },
+  ];
 
-  const statusTotal = filteredBookings.length || 1;
+  const statusColors = ["#4ade80", "#60a5fa", "#f87171"];
 
   return (
     <div
@@ -230,39 +236,26 @@ export default function ReportsPage() {
         <div className="grid lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2 bg-white/[0.07] border border-[#d4af37]/15 rounded-[2rem] p-5">
             <h2 className="text-2xl font-black text-[#fff3b0] mb-4">
-              أرباح الأيام
+              رسم أرباح الأيام
             </h2>
 
-            {dailyStats.length === 0 ? (
-              <p className="text-slate-400 text-center py-10">
-                لا توجد بيانات في الفترة المحددة
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {dailyStats.map((d) => (
-                  <div key={d.date}>
-                    <div className="flex justify-between mb-1 text-sm">
-                      <span>{d.date}</span>
-                      <span className="text-[#fff3b0] font-bold">
-                        {d.revenue} ج - {d.count} حجز
-                      </span>
-                    </div>
-
-                    <div className="h-4 bg-black/35 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12]"
-                        style={{
-                          width: `${Math.max(
-                            6,
-                            (d.revenue / maxDailyRevenue) * 100
-                          )}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="h-[330px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={dailyStats}>
+                  <XAxis dataKey="date" stroke="#cbd5e1" />
+                  <YAxis stroke="#cbd5e1" />
+                  <Tooltip
+                    contentStyle={{
+                      background: "#07111f",
+                      border: "1px solid rgba(212,175,55,.25)",
+                      borderRadius: "16px",
+                      color: "white",
+                    }}
+                  />
+                  <Bar dataKey="revenue" fill="#d4af37" radius={[10, 10, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
 
           <div className="bg-white/[0.07] border border-[#d4af37]/15 rounded-[2rem] p-5">
@@ -270,58 +263,39 @@ export default function ReportsPage() {
               حالة الحجوزات
             </h2>
 
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>مكتملة</span>
-                  <span>{Math.round((completedBookings.length / statusTotal) * 100)}%</span>
-                </div>
-                <div className="h-3 bg-black/35 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-green-400"
-                    style={{
-                      width: `${(completedBookings.length / statusTotal) * 100}%`,
+            <div className="h-[260px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={statusData}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={55}
+                    outerRadius={90}
+                    paddingAngle={5}
+                  >
+                    {statusData.map((entry, index) => (
+                      <Cell key={entry.name} fill={statusColors[index]} />
+                    ))}
+                  </Pie>
+
+                  <Tooltip
+                    contentStyle={{
+                      background: "#07111f",
+                      border: "1px solid rgba(212,175,55,.25)",
+                      borderRadius: "16px",
+                      color: "white",
                     }}
                   />
-                </div>
-              </div>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
 
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>منتظرة</span>
-                  <span>{Math.round((waitingBookings.length / statusTotal) * 100)}%</span>
-                </div>
-                <div className="h-3 bg-black/35 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-400"
-                    style={{
-                      width: `${(waitingBookings.length / statusTotal) * 100}%`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>ملغية</span>
-                  <span>{Math.round((cancelledBookings.length / statusTotal) * 100)}%</span>
-                </div>
-                <div className="h-3 bg-black/35 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-red-400"
-                    style={{
-                      width: `${(cancelledBookings.length / statusTotal) * 100}%`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div className="rounded-2xl bg-black/35 border border-white/10 p-4 mt-5">
-                <p className="text-slate-300">الأكثر طلبًا</p>
-                <p className="text-2xl font-black text-[#fff3b0] mt-2">
-                  {topService}
-                </p>
-              </div>
+            <div className="rounded-2xl bg-black/35 border border-white/10 p-4 mt-5">
+              <p className="text-slate-300">الأكثر طلبًا</p>
+              <p className="text-2xl font-black text-[#fff3b0] mt-2">
+                {topService}
+              </p>
             </div>
           </div>
         </div>
@@ -332,31 +306,41 @@ export default function ReportsPage() {
               ترتيب الخدمات
             </h2>
 
-            {serviceStats.length === 0 ? (
-              <p className="text-slate-400 text-center py-10">
-                لا توجد خدمات
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {serviceStats.map((s) => (
-                  <div
-                    key={s.name}
-                    className="bg-black/35 border border-white/10 rounded-2xl p-4 flex justify-between items-center"
-                  >
-                    <div>
-                      <p className="font-black">{s.name}</p>
-                      <p className="text-slate-400 text-sm">
-                        عدد الطلبات: {s.count}
-                      </p>
-                    </div>
+            <div className="h-[330px] mb-5">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={serviceStats.slice(0, 8)}>
+                  <XAxis dataKey="name" stroke="#cbd5e1" />
+                  <YAxis stroke="#cbd5e1" />
+                  <Tooltip
+                    contentStyle={{
+                      background: "#07111f",
+                      border: "1px solid rgba(212,175,55,.25)",
+                      borderRadius: "16px",
+                      color: "white",
+                    }}
+                  />
+                  <Bar dataKey="count" fill="#fff3b0" radius={[10, 10, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
 
-                    <p className="text-[#fff3b0] font-black">
-                      {s.revenue} ج
+            <div className="space-y-3">
+              {serviceStats.map((s) => (
+                <div
+                  key={s.name}
+                  className="bg-black/35 border border-white/10 rounded-2xl p-4 flex justify-between items-center"
+                >
+                  <div>
+                    <p className="font-black">{s.name}</p>
+                    <p className="text-slate-400 text-sm">
+                      عدد الطلبات: {s.count}
                     </p>
                   </div>
-                ))}
-              </div>
-            )}
+
+                  <p className="text-[#fff3b0] font-black">{s.revenue} ج</p>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="bg-white/[0.07] border border-[#d4af37]/15 rounded-[2rem] p-5">
@@ -364,51 +348,51 @@ export default function ReportsPage() {
               آخر الحجوزات
             </h2>
 
-            {filteredBookings.length === 0 ? (
-              <p className="text-slate-400 text-center py-10">
-                لا توجد حجوزات
-              </p>
-            ) : (
-              <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
-                {filteredBookings.slice(0, 12).map((b) => (
-                  <div
-                    key={b.id}
-                    className="bg-black/35 border border-white/10 rounded-2xl p-4"
-                  >
-                    <div className="flex justify-between gap-3">
-                      <div>
-                        <p className="font-black">{b.name}</p>
-                        <p className="text-slate-400 text-sm">{b.phone}</p>
-                      </div>
-
-                      <span
-                        className={`h-fit px-3 py-1 rounded-full text-xs font-bold ${
-                          b.status === "completed"
-                            ? "bg-green-500/15 text-green-300"
-                            : b.status === "cancelled"
-                            ? "bg-red-500/15 text-red-300"
-                            : "bg-blue-500/15 text-blue-300"
-                        }`}
-                      >
-                        {b.status === "completed"
-                          ? "تم"
-                          : b.status === "cancelled"
-                          ? "ملغي"
-                          : "منتظر"}
-                      </span>
+            <div className="space-y-3 max-h-[720px] overflow-y-auto pr-1">
+              {filteredBookings.slice(0, 14).map((b) => (
+                <div
+                  key={b.id}
+                  className="bg-black/35 border border-white/10 rounded-2xl p-4"
+                >
+                  <div className="flex justify-between gap-3">
+                    <div>
+                      <p className="font-black">{b.name}</p>
+                      <p className="text-slate-400 text-sm">{b.phone}</p>
                     </div>
 
-                    <p className="text-[#fff3b0] text-sm mt-3">
-                      {b.date} - {formatTime(b.time)}
-                    </p>
-
-                    <p className="text-slate-300 text-sm mt-2 line-clamp-2">
-                      {b.service}
-                    </p>
+                    <span
+                      className={`h-fit px-3 py-1 rounded-full text-xs font-bold ${
+                        b.status === "completed"
+                          ? "bg-green-500/15 text-green-300"
+                          : b.status === "cancelled"
+                          ? "bg-red-500/15 text-red-300"
+                          : "bg-blue-500/15 text-blue-300"
+                      }`}
+                    >
+                      {b.status === "completed"
+                        ? "تم"
+                        : b.status === "cancelled"
+                        ? "ملغي"
+                        : "منتظر"}
+                    </span>
                   </div>
-                ))}
-              </div>
-            )}
+
+                  <p className="text-[#fff3b0] text-sm mt-3">
+                    {b.date} - {formatTime(b.time)}
+                  </p>
+
+                  <p className="text-slate-300 text-sm mt-2 line-clamp-2">
+                    {b.service}
+                  </p>
+                </div>
+              ))}
+
+              {filteredBookings.length === 0 && (
+                <p className="text-slate-400 text-center py-10">
+                  لا توجد حجوزات
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
