@@ -832,6 +832,13 @@ const topServiceName = (() => {
     التقارير
   </a>
 
+  <a
+  href="/admin/calendar"
+  className="bg-white/[0.07] border border-[#d4af37]/20 text-[#fff3b0] px-5 py-3 rounded-2xl font-black"
+>
+  التقويم
+</a>
+
   <button
     onClick={() => setSettingsOpen(true)}
     className="w-14 h-14 rounded-2xl border border-[#d4af37]/25 bg-white/[0.07] text-[#fff3b0] text-3xl font-black flex items-center justify-center"
