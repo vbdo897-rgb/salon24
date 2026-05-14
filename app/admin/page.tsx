@@ -844,6 +844,34 @@ const topServiceName = (() => {
         </div>
 
         <div className="flex flex-wrap justify-end gap-2">
+
+
+          <button
+  onClick={async () => {
+    if (!("Notification" in window)) {
+      alert("المتصفح لا يدعم الإشعارات");
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+
+    if (permission !== "granted") {
+      alert("لازم توافق على الإشعارات");
+      return;
+    }
+
+    if ("serviceWorker" in navigator) {
+      await navigator.serviceWorker.register("/sw.js");
+    }
+
+    alert("✅ تم تفعيل الإشعارات");
+  }}
+  className="bg-green-500 text-black px-5 py-3 rounded-2xl font-black"
+>
+  تفعيل الإشعارات
+</button>
+
+
           <button
             onClick={refreshBookings}
             className="bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black px-5 py-3 rounded-2xl font-black"

@@ -1,8 +1,11 @@
 self.addEventListener("push", (event) => {
-  const data = event.data?.json();
+  const data = event.data ? event.data.json() : {};
 
-  self.registration.showNotification(data.title, {
-    body: data.body,
-    icon: "/logo.png",
-  });
+  event.waitUntil(
+    self.registration.showNotification(data.title || "Salon24", {
+      body: data.body || "لديك حجز جديد",
+      icon: "/logo.png",
+      badge: "/logo.png",
+    })
+  );
 });
