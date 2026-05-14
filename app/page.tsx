@@ -153,6 +153,11 @@ export default function Home() {
     };
 
     await addBooking(bookingData);
+
+    await fetch("/api/send-notification", {
+  method: "POST",
+});
+
     await loadBookings();
 
     setMessage(`✅ تم الحجز بنجاح - الإجمالي ${selectedTotal} جنيه`);
