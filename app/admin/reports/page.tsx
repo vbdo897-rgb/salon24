@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getBookings } from "@/lib/storage";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import {
   BarChart,
   Bar,
@@ -38,6 +40,7 @@ export default function ReportsPage() {
   const [fromDate, setFromDate] = useState(currentMonth + "-01");
   const [toDate, setToDate] = useState(today);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -56,13 +59,23 @@ export default function ReportsPage() {
   const filteredBookings = useMemo(() => {
     return bookings
       .filter((b) => b.date >= fromDate && b.date <= toDate)
-      .filter((b) => (statusFilter === "all" ? true : b.status === statusFilter))
+      .filter((b) =>
+        statusFilter === "all" ? true : b.status === statusFilter
+      )
       .sort((a, b) => b.date.localeCompare(a.date));
   }, [bookings, fromDate, toDate, statusFilter]);
 
-  const completedBookings = filteredBookings.filter((b) => b.status === "completed");
-  const waitingBookings = filteredBookings.filter((b) => b.status === "waiting");
-  const cancelledBookings = filteredBookings.filter((b) => b.status === "cancelled");
+  const completedBookings = filteredBookings.filter(
+    (b) => b.status === "completed"
+  );
+
+  const waitingBookings = filteredBookings.filter(
+    (b) => b.status === "waiting"
+  );
+
+  const cancelledBookings = filteredBookings.filter(
+    (b) => b.status === "cancelled"
+  );
 
   const totalRevenue = completedBookings.reduce(
     (sum, b) => sum + getBookingTotal(b.service),
@@ -139,12 +152,54 @@ export default function ReportsPage() {
 
   const statusColors = ["#4ade80", "#60a5fa", "#f87171"];
 
+  const exportPDF = async () => {
+    const element = document.getElementById("reports-content");
+
+    if (!element) return;
+
+    try {
+      setExporting(true);
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: "#02040a",
+        useCORS: true,
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`Salon24-Reports-${fromDate}-to-${toDate}.pdf`);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div
       dir="rtl"
       className="min-h-screen bg-[radial-gradient(circle_at_top,#18283f_0,#06111f_45%,#02040a_100%)] text-white p-4"
     >
-      <div className="max-w-7xl mx-auto space-y-5">
+      <div id="reports-content" className="max-w-7xl mx-auto space-y-5">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-4xl font-black bg-gradient-to-r from-[#fff3b0] via-[#d4af37] to-[#8a641c] bg-clip-text text-transparent">
@@ -156,12 +211,22 @@ export default function ReportsPage() {
             </p>
           </div>
 
-          <a
-            href="/admin"
-            className="bg-black/35 border border-[#d4af37]/20 text-[#fff3b0] px-5 py-3 rounded-2xl font-black text-center"
-          >
-            رجوع للأدمن
-          </a>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={exportPDF}
+              disabled={exporting}
+              className="bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black px-5 py-3 rounded-2xl font-black disabled:opacity-50"
+            >
+              {exporting ? "جاري التحميل..." : "تحميل PDF"}
+            </button>
+
+            <a
+              href="/admin"
+              className="bg-black/35 border border-[#d4af37]/20 text-[#fff3b0] px-5 py-3 rounded-2xl font-black text-center"
+            >
+              رجوع للأدمن
+            </a>
+          </div>
         </div>
 
         <div className="bg-white/[0.07] border border-[#d4af37]/15 rounded-[2rem] p-5 grid md:grid-cols-3 gap-3">
@@ -201,7 +266,9 @@ export default function ReportsPage() {
 
           <div className="bg-white/[0.07] border border-[#d4af37]/15 p-5 rounded-3xl">
             <p className="text-slate-300">عدد الحجوزات</p>
-            <p className="text-4xl font-black mt-2">{filteredBookings.length}</p>
+            <p className="text-4xl font-black mt-2">
+              {filteredBookings.length}
+            </p>
           </div>
 
           <div className="bg-white/[0.07] border border-[#d4af37]/15 p-5 rounded-3xl">
@@ -252,7 +319,11 @@ export default function ReportsPage() {
                       color: "white",
                     }}
                   />
-                  <Bar dataKey="revenue" fill="#d4af37" radius={[10, 10, 0, 0]} />
+                  <Bar
+                    dataKey="revenue"
+                    fill="#d4af37"
+                    radius={[10, 10, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -319,27 +390,37 @@ export default function ReportsPage() {
                       color: "white",
                     }}
                   />
-                  <Bar dataKey="count" fill="#fff3b0" radius={[10, 10, 0, 0]} />
+                  <Bar
+                    dataKey="count"
+                    fill="#fff3b0"
+                    radius={[10, 10, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
 
             <div className="space-y-3">
-              {serviceStats.map((s) => (
-                <div
-                  key={s.name}
-                  className="bg-black/35 border border-white/10 rounded-2xl p-4 flex justify-between items-center"
-                >
-                  <div>
-                    <p className="font-black">{s.name}</p>
-                    <p className="text-slate-400 text-sm">
-                      عدد الطلبات: {s.count}
-                    </p>
-                  </div>
+              {serviceStats.length === 0 ? (
+                <p className="text-slate-400 text-center py-10">
+                  لا توجد خدمات
+                </p>
+              ) : (
+                serviceStats.map((s) => (
+                  <div
+                    key={s.name}
+                    className="bg-black/35 border border-white/10 rounded-2xl p-4 flex justify-between items-center"
+                  >
+                    <div>
+                      <p className="font-black">{s.name}</p>
+                      <p className="text-slate-400 text-sm">
+                        عدد الطلبات: {s.count}
+                      </p>
+                    </div>
 
-                  <p className="text-[#fff3b0] font-black">{s.revenue} ج</p>
-                </div>
-              ))}
+                    <p className="text-[#fff3b0] font-black">{s.revenue} ج</p>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -349,48 +430,48 @@ export default function ReportsPage() {
             </h2>
 
             <div className="space-y-3 max-h-[720px] overflow-y-auto pr-1">
-              {filteredBookings.slice(0, 14).map((b) => (
-                <div
-                  key={b.id}
-                  className="bg-black/35 border border-white/10 rounded-2xl p-4"
-                >
-                  <div className="flex justify-between gap-3">
-                    <div>
-                      <p className="font-black">{b.name}</p>
-                      <p className="text-slate-400 text-sm">{b.phone}</p>
-                    </div>
-
-                    <span
-                      className={`h-fit px-3 py-1 rounded-full text-xs font-bold ${
-                        b.status === "completed"
-                          ? "bg-green-500/15 text-green-300"
-                          : b.status === "cancelled"
-                          ? "bg-red-500/15 text-red-300"
-                          : "bg-blue-500/15 text-blue-300"
-                      }`}
-                    >
-                      {b.status === "completed"
-                        ? "تم"
-                        : b.status === "cancelled"
-                        ? "ملغي"
-                        : "منتظر"}
-                    </span>
-                  </div>
-
-                  <p className="text-[#fff3b0] text-sm mt-3">
-                    {b.date} - {formatTime(b.time)}
-                  </p>
-
-                  <p className="text-slate-300 text-sm mt-2 line-clamp-2">
-                    {b.service}
-                  </p>
-                </div>
-              ))}
-
-              {filteredBookings.length === 0 && (
+              {filteredBookings.length === 0 ? (
                 <p className="text-slate-400 text-center py-10">
                   لا توجد حجوزات
                 </p>
+              ) : (
+                filteredBookings.slice(0, 14).map((b) => (
+                  <div
+                    key={b.id}
+                    className="bg-black/35 border border-white/10 rounded-2xl p-4"
+                  >
+                    <div className="flex justify-between gap-3">
+                      <div>
+                        <p className="font-black">{b.name}</p>
+                        <p className="text-slate-400 text-sm">{b.phone}</p>
+                      </div>
+
+                      <span
+                        className={`h-fit px-3 py-1 rounded-full text-xs font-bold ${
+                          b.status === "completed"
+                            ? "bg-green-500/15 text-green-300"
+                            : b.status === "cancelled"
+                            ? "bg-red-500/15 text-red-300"
+                            : "bg-blue-500/15 text-blue-300"
+                        }`}
+                      >
+                        {b.status === "completed"
+                          ? "تم"
+                          : b.status === "cancelled"
+                          ? "ملغي"
+                          : "منتظر"}
+                      </span>
+                    </div>
+
+                    <p className="text-[#fff3b0] text-sm mt-3">
+                      {b.date} - {formatTime(b.time)}
+                    </p>
+
+                    <p className="text-slate-300 text-sm mt-2 line-clamp-2">
+                      {b.service}
+                    </p>
+                  </div>
+                ))
               )}
             </div>
           </div>
