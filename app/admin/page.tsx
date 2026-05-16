@@ -52,6 +52,7 @@ const [services, setServices] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [role, setRole] = useState("");
   const [newServiceName, setNewServiceName] = useState("");
 const [newServicePrice, setNewServicePrice] = useState("");
 
@@ -73,8 +74,18 @@ const [editServicePrice, setEditServicePrice] = useState("");
       const { data } = await supabase.auth.getUser();
 
       if (data.user) {
-        setLogged(true);
-      }
+  setLogged(true);
+}
+
+if (data.user?.email) {
+  const { data: adminData } = await supabase
+    .from("admins")
+    .select("role")
+    .eq("email", data.user.email)
+    .single();
+
+  setRole(adminData?.role || "staff");
+}
 
       const s = await getSettings();
       setSettings(s);
@@ -587,9 +598,14 @@ const topServiceName = (() => {
     إدارة الحجوزات
   </a>
 
-  <a href="/admin/admins" className="block w-full text-center bg-white/[0.07] border border-[#d4af37]/20 text-[#fff3b0] p-4 rounded-2xl font-black">
+  {role === "owner" && (
+  <a
+    href="/admin/admins"
+    className="block w-full text-center bg-white/[0.07] border border-[#d4af37]/20 text-[#fff3b0] p-4 rounded-2xl font-black"
+  >
     الأدمنز والصلاحيات
   </a>
+)}
 
   <a href="/admin/settings/notifications" className="block w-full text-center bg-white/[0.07] border border-[#d4af37]/20 text-[#fff3b0] p-4 rounded-2xl font-black">
     الإشعارات
