@@ -156,51 +156,78 @@ const exportPDF = async () => {
   const element = document.getElementById("reports-content");
 
   if (!element) {
-    alert("❌ لم يتم العثور على محتوى التقرير");
+    alert("❌ لم يتم العثور على التقرير");
     return;
   }
 
   try {
     setExporting(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) =>
+      setTimeout(resolve, 1000)
+    );
 
     const canvas = await html2canvas(element, {
-      scale: 1.5,
-      backgroundColor: "#02040a",
+      scale: 2,
       useCORS: true,
-      allowTaint: true,
+      backgroundColor: "#02040a",
       logging: false,
-      windowWidth: element.scrollWidth,
-      windowHeight: element.scrollHeight,
+      scrollY: -window.scrollY,
     });
 
-    const imgData = canvas.toDataURL("image/jpeg", 0.95);
-    const pdf = new jsPDF("p", "mm", "a4");
+    const imgData = canvas.toDataURL("image/png");
 
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+    const pdf = new jsPDF({
+      orientation: "p",
+      unit: "mm",
+      format: "a4",
+    });
 
-    const imgWidth = pageWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const pdfWidth = 210;
+    const pdfHeight = 297;
+
+    const imgWidth = pdfWidth;
+
+    const imgHeight =
+      (canvas.height * imgWidth) / canvas.width;
 
     let heightLeft = imgHeight;
+
     let position = 0;
 
-    pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
+    pdf.addImage(
+      imgData,
+      "PNG",
+      0,
+      position,
+      imgWidth,
+      imgHeight
+    );
+
+    heightLeft -= pdfHeight;
 
     while (heightLeft > 0) {
-      position -= pageHeight;
+      position -= pdfHeight;
+
       pdf.addPage();
-      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+
+      pdf.addImage(
+        imgData,
+        "PNG",
+        0,
+        position,
+        imgWidth,
+        imgHeight
+      );
+
+      heightLeft -= pdfHeight;
     }
 
-    pdf.save(`Salon24-Reports-${fromDate}-to-${toDate}.pdf`);
-  } catch (error) {
-    console.error(error);
-    alert("❌ حصل خطأ أثناء تحميل PDF");
+    pdf.save("Salon24-Report.pdf");
+  } catch (err) {
+    console.error(err);
+
+    alert("❌ فشل إنشاء ملف PDF");
   } finally {
     setExporting(false);
   }
