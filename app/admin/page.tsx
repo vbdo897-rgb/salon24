@@ -46,23 +46,18 @@ export default function Admin() {
 
   const [settings, setSettings] = useState<any>(null);
   const [bookings, setBookings] = useState<any[]>([]);
-  const [services, setServices] = useState<any[]>([]);
-
-  const [newTime, setNewTime] = useState("");
+const [services, setServices] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState("");
-
+  const [newTime, setNewTime] = useState("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [newPassword, setNewPassword] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
-
   const [newServiceName, setNewServiceName] = useState("");
-  const [newServicePrice, setNewServicePrice] = useState("");
+const [newServicePrice, setNewServicePrice] = useState("");
 
-  const [editingServiceId, setEditingServiceId] = useState("");
-  const [editServiceName, setEditServiceName] = useState("");
-  const [editServicePrice, setEditServicePrice] = useState("");
-
+const [editingServiceId, setEditingServiceId] = useState("");
+const [editServiceName, setEditServiceName] = useState("");
+const [editServicePrice, setEditServicePrice] = useState("");
   const loadBookings = async () => {
     const data = await getBookings();
     setBookings(data);
@@ -85,7 +80,6 @@ export default function Admin() {
       setSettings(s);
 
       await loadBookings();
-      await loadServices();
       setAuthLoading(false);
     };
 
@@ -176,10 +170,9 @@ const resetPassword = async () => {
     }
   };
 
-  const refreshBookings = async () => {
-    await loadBookings();
-    await loadServices();
-  };
+ const refreshBookings = async () => {
+  await loadBookings();
+};
 
   const changeBookingStatus = async (
     id: string,
