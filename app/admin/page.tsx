@@ -795,6 +795,119 @@ const topServiceName = (() => {
                 </div>
               </div>
 
+
+              <div className="rounded-3xl border border-[#d4af37]/15 bg-white/[0.06] p-4">
+  <h3 className="text-xl font-black text-[#fff3b0] mb-4">
+    إدارة الحجوزات
+  </h3>
+
+  <button
+    onClick={handleClearSelectedDay}
+    className="w-full bg-red-600 text-white p-4 rounded-2xl font-black mb-3"
+  >
+    تفريغ التاريخ المحدد
+  </button>
+
+  <button
+    onClick={handleDeleteOldBookings}
+    className="w-full bg-black border border-red-500 text-red-400 p-4 rounded-2xl font-black"
+  >
+    حذف الحجوزات القديمة
+  </button>
+</div>
+
+<div className="rounded-3xl border border-[#d4af37]/15 bg-white/[0.06] p-4">
+  <h3 className="text-xl font-black text-[#fff3b0] mb-4">
+    الأدمنز والصلاحيات
+  </h3>
+
+  <a
+    href="/admin/admins"
+    className="block w-full text-center bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black p-4 rounded-2xl font-black"
+  >
+    إدارة الأدمنز
+  </a>
+</div>
+
+<div className="rounded-3xl border border-[#d4af37]/15 bg-white/[0.06] p-4">
+  <h3 className="text-xl font-black text-[#fff3b0] mb-4">
+    الإشعارات
+  </h3>
+
+  <div className="space-y-3">
+
+    <button
+      onClick={async () => {
+        try {
+          if (!("Notification" in window)) {
+            alert("المتصفح لا يدعم الإشعارات");
+            return;
+          }
+
+          const permission = await Notification.requestPermission();
+
+          if (permission !== "granted") {
+            alert("لازم توافق على الإشعارات");
+            return;
+          }
+
+          const registration = await navigator.serviceWorker.register("/sw.js");
+
+          const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+
+            applicationServerKey: Uint8Array.from(
+              atob(
+                process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
+                  .replace(/-/g, "+")
+                  .replace(/_/g, "/")
+              ),
+              (c) => c.charCodeAt(0)
+            ),
+          });
+
+          await fetch("/api/save-subscription", {
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+            body: JSON.stringify({
+              subscription,
+            }),
+          });
+
+          alert("✅ تم تفعيل الإشعارات");
+        } catch {
+          alert("❌ حصل خطأ");
+        }
+      }}
+      className="w-full bg-green-500 text-black p-4 rounded-2xl font-black"
+    >
+      تفعيل الإشعارات
+    </button>
+
+    <button
+      onClick={async () => {
+        try {
+          await fetch("/api/delete-subscription", {
+            method: "POST",
+          });
+
+          alert("✅ تم إيقاف الإشعارات");
+        } catch {
+          alert("❌ حصل خطأ");
+        }
+      }}
+      className="w-full bg-red-600 text-white p-4 rounded-2xl font-black"
+    >
+      إيقاف الإشعارات
+    </button>
+
+  </div>
+</div>
+
               <button
                 onClick={logout}
                 className="w-full bg-black border border-red-500 text-red-400 p-4 rounded-2xl font-black"
@@ -832,12 +945,7 @@ const topServiceName = (() => {
     التقارير
   </a>
 
-  <a
-  href="/admin/admins"
-  className="bg-white/[0.07] border border-[#d4af37]/20 text-[#fff3b0] px-5 py-3 rounded-2xl font-black"
->
-  الأدمنز
-</a>
+
 
   <button
     onClick={() => setSettingsOpen(true)}
@@ -851,57 +959,8 @@ const topServiceName = (() => {
         </div>
 
         <div className="flex flex-wrap justify-end gap-2">
-
-
-          <button
- onClick={async () => {
-  try {
-    if (!("Notification" in window)) {
-      alert("المتصفح لا يدعم الإشعارات");
-      return;
-    }
-
-    const permission = await Notification.requestPermission();
-
-    if (permission !== "granted") {
-      alert("لازم توافق على الإشعارات");
-      return;
-    }
-
-    const registration = await navigator.serviceWorker.register("/sw.js");
-
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-
-      applicationServerKey: Uint8Array.from(
-        atob(
-          process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!.replace(/-/g, "+").replace(/_/g, "/")
-        ),
-        (c) => c.charCodeAt(0)
-      ),
-    });
-
-    await fetch("/api/save-subscription", {
-      method: "POST",
-
-      headers: {
-        "Content-Type": "application/json",
-      },
-
-      body: JSON.stringify({
-        subscription,
-      }),
-    });
-
-    alert("✅ تم تفعيل الإشعارات بنجاح");
-  } catch (e) {
-    alert("❌ حصل خطأ أثناء تفعيل الإشعارات");
-  }
-}}
   className="bg-green-500 text-black px-5 py-3 rounded-2xl font-black"
->
-  تفعيل الإشعارات
-</button>
+
 
 
           <button
@@ -909,20 +968,6 @@ const topServiceName = (() => {
             className="bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black px-5 py-3 rounded-2xl font-black"
           >
             تحديث البيانات
-          </button>
-
-          <button
-            onClick={handleClearSelectedDay}
-            className="bg-red-600 text-white px-5 py-3 rounded-2xl font-black"
-          >
-            تفريغ التاريخ المحدد
-          </button>
-
-          <button
-            onClick={handleDeleteOldBookings}
-            className="bg-black border border-red-500 text-red-400 px-5 py-3 rounded-2xl font-black"
-          >
-            حذف الحجوزات القديمة
           </button>
         </div>
 
