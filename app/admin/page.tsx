@@ -581,343 +581,37 @@ const topServiceName = (() => {
               </button>
             </div>
 
-            <div className="space-y-5">
-              <div className="rounded-3xl border border-[#d4af37]/15 bg-white/[0.06] p-4">
-                <h3 className="text-xl font-black text-[#fff3b0] mb-3">
-                  إدارة الخدمات والأسعار
-                </h3>
+          <div className="space-y-3">
+  <a href="/admin/settings/booking" className="block w-full text-center bg-white/[0.07] border border-[#d4af37]/20 text-[#fff3b0] p-4 rounded-2xl font-black">
+    المواعيد والحجز
+  </a>
 
-                <div className="grid grid-cols-2 gap-2 mb-3">
-                  <input
-                    value={newServiceName}
-                    onChange={(e) => setNewServiceName(e.target.value)}
-                    className="p-4 bg-black/35 border border-white/10 rounded-2xl outline-none focus:border-[#d4af37]"
-                    placeholder="اسم الخدمة"
-                  />
+  <a href="/admin/settings/services" className="block w-full text-center bg-white/[0.07] border border-[#d4af37]/20 text-[#fff3b0] p-4 rounded-2xl font-black">
+    الخدمات والأسعار
+  </a>
 
-                  <input
-                    type="number"
-                    value={newServicePrice}
-                    onChange={(e) => setNewServicePrice(e.target.value)}
-                    className="p-4 bg-black/35 border border-white/10 rounded-2xl outline-none focus:border-[#d4af37]"
-                    placeholder="السعر"
-                  />
-                </div>
-
-                <button
-                  onClick={handleAddService}
-                  className="w-full bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black p-3 rounded-2xl font-black"
-                >
-                  إضافة خدمة
-                </button>
-
-                <div className="space-y-2 mt-4">
-                  {services.length === 0 ? (
-                    <p className="text-center text-slate-400 py-4">
-                      لا توجد خدمات
-                    </p>
-                  ) : (
-                    services.map((s) => (
-                      <div
-                        key={s.id}
-                        className="rounded-2xl bg-black/35 border border-white/10 p-3"
-                      >
-                        {editingServiceId === s.id ? (
-                          <div className="space-y-2">
-                            <input
-                              value={editServiceName}
-                              onChange={(e) =>
-                                setEditServiceName(e.target.value)
-                              }
-                              className="w-full p-3 bg-black/35 border border-white/10 rounded-xl outline-none"
-                              placeholder="اسم الخدمة"
-                            />
-
-                            <input
-                              type="number"
-                              value={editServicePrice}
-                              onChange={(e) =>
-                                setEditServicePrice(e.target.value)
-                              }
-                              className="w-full p-3 bg-black/35 border border-white/10 rounded-xl outline-none"
-                              placeholder="السعر"
-                            />
-
-                            <div className="flex gap-2">
-                              <button
-                                onClick={handleUpdateService}
-                                className="flex-1 bg-green-500 text-black p-2 rounded-xl font-bold"
-                              >
-                                حفظ
-                              </button>
-
-                              <button
-                                onClick={() => {
-                                  setEditingServiceId("");
-                                  setEditServiceName("");
-                                  setEditServicePrice("");
-                                }}
-                                className="flex-1 bg-slate-600 text-white p-2 rounded-xl font-bold"
-                              >
-                                إلغاء
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-between gap-2">
-                            <div>
-                              <p className="font-black">{s.name}</p>
-                              <p className="text-[#fff3b0] text-sm font-bold">
-                                {s.price || 0} جنيه
-                              </p>
-                            </div>
-
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => startEditService(s)}
-                                className="bg-blue-500 px-3 py-2 rounded-xl font-bold"
-                              >
-                                تعديل
-                              </button>
-
-                              <button
-                                onClick={() => handleDeleteService(s.id)}
-                                className="bg-red-500 px-3 py-2 rounded-xl font-bold"
-                              >
-                                حذف
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              <div className="rounded-3xl border border-[#d4af37]/15 bg-white/[0.06] p-4">
-                <p className="text-slate-300 mb-2 font-bold">
-                  عدد الزباين يوميًا
-                </p>
-
-                <input
-                  type="number"
-                  value={settings.maxPerDay}
-                  onChange={(e) =>
-                    updateSettings({
-                      ...settings,
-                      maxPerDay: Number(e.target.value),
-                    })
-                  }
-                  className="p-4 bg-black/35 border border-white/10 w-full rounded-2xl outline-none focus:border-[#d4af37]"
-                  placeholder="عدد الحجوزات اليومي"
-                />
-              </div>
-
-              <button
-                onClick={() =>
-                  updateSettings({
-                    ...settings,
-                    bookingOpen: !settings.bookingOpen,
-                  })
-                }
-                className={`p-4 w-full rounded-2xl font-black ${
-                  settings.bookingOpen
-                    ? "bg-green-500 text-black"
-                    : "bg-red-500 text-white"
-                }`}
-              >
-                {settings.bookingOpen ? "الحجز مفتوح" : "الحجز مغلق"}
-              </button>
-
-              <div className="rounded-3xl border border-[#d4af37]/15 bg-white/[0.06] p-4">
-                <p className="text-slate-300 mb-2 font-bold">إضافة معاد جديد</p>
-
-                <div className="flex gap-2">
-                  <input
-                    type="time"
-                    value={newTime}
-                    onChange={(e) => setNewTime(e.target.value)}
-                    className="p-4 bg-black/35 border border-white/10 flex-1 rounded-2xl outline-none focus:border-[#d4af37]"
-                  />
-
-                  <button
-                    onClick={() => {
-                      if (!newTime) return;
-
-                      if (settings.timeSlots.includes(newTime)) {
-                        alert("المعاد موجود بالفعل");
-                        return;
-                      }
-
-                      updateSettings({
-                        ...settings,
-                        timeSlots: [...settings.timeSlots, newTime].sort(),
-                      });
-
-                      setNewTime("");
-                    }}
-                    className="bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black px-5 rounded-2xl font-black"
-                  >
-                    إضافة
-                  </button>
-                </div>
-              </div>
-
-              <div className="rounded-3xl border border-[#d4af37]/15 bg-white/[0.06] p-4">
-                <p className="text-slate-300 mb-3 font-bold">
-                  المواعيد الحالية
-                </p>
-
-                <div className="grid grid-cols-2 gap-2">
-                  {settings.timeSlots.map((t: string) => (
-                    <div
-                      key={t}
-                      className="flex justify-between items-center bg-black/35 border border-white/10 p-3 rounded-2xl"
-                    >
-                      <span>{formatTime(t)}</span>
-
-                      <button
-                        onClick={() =>
-                          updateSettings({
-                            ...settings,
-                            timeSlots: settings.timeSlots.filter(
-                              (x: string) => x !== t
-                            ),
-                          })
-                        }
-                        className="bg-red-500 px-3 py-1 rounded-xl font-bold"
-                      >
-                        حذف
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-
-              <div className="rounded-3xl border border-[#d4af37]/15 bg-white/[0.06] p-4">
-  <h3 className="text-xl font-black text-[#fff3b0] mb-4">
+  <a href="/admin/settings/bookings" className="block w-full text-center bg-white/[0.07] border border-[#d4af37]/20 text-[#fff3b0] p-4 rounded-2xl font-black">
     إدارة الحجوزات
-  </h3>
+  </a>
+
+  <a href="/admin/admins" className="block w-full text-center bg-white/[0.07] border border-[#d4af37]/20 text-[#fff3b0] p-4 rounded-2xl font-black">
+    الأدمنز والصلاحيات
+  </a>
+
+  <a href="/admin/settings/notifications" className="block w-full text-center bg-white/[0.07] border border-[#d4af37]/20 text-[#fff3b0] p-4 rounded-2xl font-black">
+    الإشعارات
+  </a>
 
   <button
-    onClick={handleClearSelectedDay}
-    className="w-full bg-red-600 text-white p-4 rounded-2xl font-black mb-3"
-  >
-    تفريغ التاريخ المحدد
-  </button>
-
-  <button
-    onClick={handleDeleteOldBookings}
+    onClick={logout}
     className="w-full bg-black border border-red-500 text-red-400 p-4 rounded-2xl font-black"
   >
-    حذف الحجوزات القديمة
+    تسجيل خروج
   </button>
 </div>
-
-<div className="rounded-3xl border border-[#d4af37]/15 bg-white/[0.06] p-4">
-  <h3 className="text-xl font-black text-[#fff3b0] mb-4">
-    الأدمنز والصلاحيات
-  </h3>
-
-  <a
-    href="/admin/admins"
-    className="block w-full text-center bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black p-4 rounded-2xl font-black"
-  >
-    إدارة الأدمنز
-  </a>
 </div>
-
-<div className="rounded-3xl border border-[#d4af37]/15 bg-white/[0.06] p-4">
-  <h3 className="text-xl font-black text-[#fff3b0] mb-4">
-    الإشعارات
-  </h3>
-
-  <div className="space-y-3">
-
-    <button
-      onClick={async () => {
-        try {
-          if (!("Notification" in window)) {
-            alert("المتصفح لا يدعم الإشعارات");
-            return;
-          }
-
-          const permission = await Notification.requestPermission();
-
-          if (permission !== "granted") {
-            alert("لازم توافق على الإشعارات");
-            return;
-          }
-
-          const registration = await navigator.serviceWorker.register("/sw.js");
-
-          const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-
-            applicationServerKey: Uint8Array.from(
-              atob(
-                process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
-                  .replace(/-/g, "+")
-                  .replace(/_/g, "/")
-              ),
-              (c) => c.charCodeAt(0)
-            ),
-          });
-
-          await fetch("/api/save-subscription", {
-            method: "POST",
-
-            headers: {
-              "Content-Type": "application/json",
-            },
-
-            body: JSON.stringify({
-              subscription,
-            }),
-          });
-
-          alert("✅ تم تفعيل الإشعارات");
-        } catch {
-          alert("❌ حصل خطأ");
-        }
-      }}
-      className="w-full bg-green-500 text-black p-4 rounded-2xl font-black"
-    >
-      تفعيل الإشعارات
-    </button>
-
-    <button
-      onClick={async () => {
-        try {
-          await fetch("/api/delete-subscription", {
-            method: "POST",
-          });
-
-          alert("✅ تم إيقاف الإشعارات");
-        } catch {
-          alert("❌ حصل خطأ");
-        }
-      }}
-      className="w-full bg-red-600 text-white p-4 rounded-2xl font-black"
-    >
-      إيقاف الإشعارات
-    </button>
-
-  </div>
 </div>
-
-              <button
-                onClick={logout}
-                className="w-full bg-black border border-red-500 text-red-400 p-4 rounded-2xl font-black"
-              >
-                تسجيل خروج
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+)}
 
       <div className="max-w-6xl mx-auto space-y-5 relative z-10">
         <div className="flex items-center justify-between gap-3">
@@ -959,9 +653,6 @@ const topServiceName = (() => {
         </div>
 
         <div className="flex flex-wrap justify-end gap-2">
-  className="bg-green-500 text-black px-5 py-3 rounded-2xl font-black"
-
-
 
           <button
             onClick={refreshBookings}
