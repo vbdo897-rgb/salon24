@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "react-calendar/dist/Calendar.css";
 
 :root {
   --background: #ffffff;
@@ -51,4 +52,20 @@ a:not(:disabled):active {
   filter: brightness(0.92);
 }
 
-@import "react-calendar/dist/Calendar.css";
+@media print {
+  body {
+    background: #02040a !important;
+    color: white !important;
+  }
+
+  button,
+  a {
+    display: none !important;
+  }
+
+  #reports-content {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 20px !important;
+  }
+}

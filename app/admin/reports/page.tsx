@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getBookings } from "@/lib/storage";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 import {
   BarChart,
   Bar,
@@ -152,85 +150,8 @@ export default function ReportsPage() {
 
   const statusColors = ["#4ade80", "#60a5fa", "#f87171"];
 
-const exportPDF = async () => {
-  const element = document.getElementById("reports-content");
-
-  if (!element) {
-    alert("❌ لم يتم العثور على التقرير");
-    return;
-  }
-
-  try {
-    setExporting(true);
-
-    await new Promise((resolve) =>
-      setTimeout(resolve, 1000)
-    );
-
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#02040a",
-      logging: false,
-      scrollY: -window.scrollY,
-    });
-
-    const imgData = canvas.toDataURL("image/png");
-
-    const pdf = new jsPDF({
-      orientation: "p",
-      unit: "mm",
-      format: "a4",
-    });
-
-    const pdfWidth = 210;
-    const pdfHeight = 297;
-
-    const imgWidth = pdfWidth;
-
-    const imgHeight =
-      (canvas.height * imgWidth) / canvas.width;
-
-    let heightLeft = imgHeight;
-
-    let position = 0;
-
-    pdf.addImage(
-      imgData,
-      "PNG",
-      0,
-      position,
-      imgWidth,
-      imgHeight
-    );
-
-    heightLeft -= pdfHeight;
-
-    while (heightLeft > 0) {
-      position -= pdfHeight;
-
-      pdf.addPage();
-
-      pdf.addImage(
-        imgData,
-        "PNG",
-        0,
-        position,
-        imgWidth,
-        imgHeight
-      );
-
-      heightLeft -= pdfHeight;
-    }
-
-    pdf.save("Salon24-Report.pdf");
-  } catch (err) {
-    console.error(err);
-
-    alert("❌ فشل إنشاء ملف PDF");
-  } finally {
-    setExporting(false);
-  }
+const exportPDF = () => {
+  window.print();
 };
 
   return (
