@@ -165,11 +165,16 @@ const resetPassword = async () => {
 };
 
   const logout = async () => {
-    await supabase.auth.signOut();
-    setLogged(false);
-    setEmail("");
-    setPassword("");
-  };
+  await supabase.auth.signOut();
+
+  setLogged(false);
+
+  setEmail("");
+
+  setPassword("");
+
+  window.location.href = "/admin";
+};
 
   const updateSettings = async (s: any) => {
     setSettings(s);
