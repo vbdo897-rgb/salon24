@@ -682,6 +682,16 @@ const topServiceName = (() => {
           >
             تحديث البيانات
           </button>
+          
+          {role === "staff" && (
+  <button
+    onClick={logout}
+    className="bg-black border border-red-500 text-red-400 px-5 py-3 rounded-2xl font-black"
+  >
+    تسجيل خروج
+  </button>
+)}
+
         </div>
 
        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
