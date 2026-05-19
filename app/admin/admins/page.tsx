@@ -32,10 +32,14 @@ export default function AdminsPage() {
   };
 
   useEffect(() => {
-    if (currentRole === "owner") {
-      loadAdmins();
-    }
-  }, [currentRole]);
+  if (currentRole === "owner") {
+    loadAdmins();
+  }
+}, [currentRole]);
+
+useEffect(() => {
+  loadAdmins();
+}, []);
 
   const addAdmin = async () => {
     if (!email.trim() || !password.trim()) {
