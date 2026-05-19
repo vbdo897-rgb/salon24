@@ -2,13 +2,25 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
+import { useAdminRole } from "@/hooks/useAdminRole";
 
 export default function AdminsPage() {
+  const router = useRouter();
+
+  const { role: currentRole, loading: roleLoading } = useAdminRole();
+
   const [admins, setAdmins] = useState<any[]>([]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("staff");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!roleLoading && currentRole !== "owner") {
+      router.push("/admin");
+    }
+  }, [currentRole, roleLoading, router]);
 
   const loadAdmins = async () => {
     const { data } = await supabase
@@ -20,8 +32,10 @@ export default function AdminsPage() {
   };
 
   useEffect(() => {
-    loadAdmins();
-  }, []);
+    if (currentRole === "owner") {
+      loadAdmins();
+    }
+  }, [currentRole]);
 
   const addAdmin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -34,8 +48,14 @@ export default function AdminsPage() {
 
       const res = await fetch("/api/admins/create", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), password, role }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+          role,
+        }),
       });
 
       const data = await res.json();
@@ -46,19 +66,26 @@ export default function AdminsPage() {
       }
 
       alert("✅ تم إضافة الأدمن بنجاح");
+
       setEmail("");
       setPassword("");
       setRole("staff");
+
       await loadAdmins();
     } finally {
       setLoading(false);
     }
   };
 
-  const updateRole = async (adminEmail: string, newRole: string) => {
+  const updateRole = async (
+    adminEmail: string,
+    newRole: string
+  ) => {
     const { error } = await supabase
       .from("admins")
-      .update({ role: newRole })
+      .update({
+        role: newRole,
+      })
       .eq("email", adminEmail);
 
     if (error) {
@@ -67,17 +94,27 @@ export default function AdminsPage() {
     }
 
     alert("✅ تم تغيير الصلاحية");
+
     await loadAdmins();
   };
 
   const deleteAdmin = async (adminEmail: string) => {
-    const ok = confirm(`متأكد إنك عايز تحذف الأدمن ${adminEmail}؟`);
+    const ok = confirm(
+      `متأكد إنك عايز تحذف الأدمن ${adminEmail}؟`
+    );
+
     if (!ok) return;
 
     const res = await fetch("/api/admins/delete", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: adminEmail }),
+
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+      body: JSON.stringify({
+        email: adminEmail,
+      }),
     });
 
     const data = await res.json();
@@ -88,8 +125,13 @@ export default function AdminsPage() {
     }
 
     alert("✅ تم حذف الأدمن");
+
     await loadAdmins();
   };
+
+  if (roleLoading) {
+    return null;
+  }
 
   return (
     <div
@@ -143,9 +185,17 @@ export default function AdminsPage() {
               onChange={(e) => setRole(e.target.value)}
               className="bg-black/35 border border-white/10 p-4 rounded-2xl outline-none focus:border-[#d4af37]"
             >
-              <option value="staff">Staff - موظف</option>
-              <option value="admin">Admin - مدير</option>
-              <option value="owner">Owner - مالك</option>
+              <option value="staff">
+                Staff - موظف
+              </option>
+
+              <option value="admin">
+                Admin - مدير
+              </option>
+
+              <option value="owner">
+                Owner - مالك
+              </option>
             </select>
           </div>
 
@@ -154,13 +204,16 @@ export default function AdminsPage() {
             disabled={loading}
             className="w-full bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black p-4 rounded-2xl font-black disabled:opacity-50"
           >
-            {loading ? "جاري الإضافة..." : "إضافة أدمن"}
+            {loading
+              ? "جاري الإضافة..."
+              : "إضافة أدمن"}
           </button>
         </div>
 
         <div className="grid md:grid-cols-3 gap-3">
           <div className="bg-white/[0.07] border border-[#d4af37]/15 rounded-3xl p-5">
             <p className="text-slate-300">Owner</p>
+
             <p className="text-sm text-slate-400 mt-2">
               كل الصلاحيات + إدارة الأدمنز
             </p>
@@ -168,6 +221,7 @@ export default function AdminsPage() {
 
           <div className="bg-white/[0.07] border border-[#d4af37]/15 rounded-3xl p-5">
             <p className="text-slate-300">Admin</p>
+
             <p className="text-sm text-slate-400 mt-2">
               إدارة الحجز والخدمات والتقارير
             </p>
@@ -175,6 +229,7 @@ export default function AdminsPage() {
 
           <div className="bg-white/[0.07] border border-[#d4af37]/15 rounded-3xl p-5">
             <p className="text-slate-300">Staff</p>
+
             <p className="text-sm text-slate-400 mt-2">
               الحجوزات فقط
             </p>
@@ -198,26 +253,45 @@ export default function AdminsPage() {
                   className="bg-black/35 border border-white/10 rounded-2xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
                 >
                   <div>
-                    <p className="font-black text-lg">{admin.email}</p>
+                    <p className="font-black text-lg">
+                      {admin.email}
+                    </p>
+
                     <p className="text-slate-400 text-sm">
-                      الصلاحية الحالية: {admin.role || "staff"}
+                      الصلاحية الحالية:{" "}
+                      {admin.role || "staff"}
                     </p>
                   </div>
 
                   <div className="flex flex-col md:flex-row gap-2">
                     <select
                       value={admin.role || "staff"}
-                      onChange={(e) => updateRole(admin.email, e.target.value)}
+                      onChange={(e) =>
+                        updateRole(
+                          admin.email,
+                          e.target.value
+                        )
+                      }
                       className="bg-black/35 border border-white/10 p-3 rounded-2xl outline-none focus:border-[#d4af37]"
                     >
-                      <option value="staff">Staff</option>
-                      <option value="admin">Admin</option>
-                      <option value="owner">Owner</option>
+                      <option value="staff">
+                        Staff
+                      </option>
+
+                      <option value="admin">
+                        Admin
+                      </option>
+
+                      <option value="owner">
+                        Owner
+                      </option>
                     </select>
 
                     {admin.role !== "owner" && (
                       <button
-                        onClick={() => deleteAdmin(admin.email)}
+                        onClick={() =>
+                          deleteAdmin(admin.email)
+                        }
                         className="bg-red-600 text-white px-5 py-3 rounded-2xl font-black"
                       >
                         حذف

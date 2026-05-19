@@ -460,39 +460,43 @@ const topServiceName = (() => {
           واتساب
         </a>
 
-        {b.status !== "completed" && (
-          <button
-            onClick={() => changeBookingStatus(b.id, "completed")}
-            className="bg-blue-500 text-white px-4 py-2 rounded-xl font-bold"
-          >
-            تم
-          </button>
-        )}
+     {b.status !== "completed" && (
+  <button
+    onClick={() => changeBookingStatus(b.id, "completed")}
+    className="bg-blue-500 text-white px-4 py-2 rounded-xl font-bold"
+  >
+    تم
+  </button>
+)}
 
-        {b.status !== "cancelled" && (
-          <button
-            onClick={() => changeBookingStatus(b.id, "cancelled")}
-            className="bg-red-600 text-white px-4 py-2 rounded-xl font-bold"
-          >
-            إلغاء
-          </button>
-        )}
+{role !== "staff" && (
+  <>
+    {b.status !== "cancelled" && (
+      <button
+        onClick={() => changeBookingStatus(b.id, "cancelled")}
+        className="bg-red-600 text-white px-4 py-2 rounded-xl font-bold"
+      >
+        إلغاء
+      </button>
+    )}
 
-        {b.status !== "waiting" && (
-          <button
-            onClick={() => changeBookingStatus(b.id, "waiting")}
-            className="bg-slate-600 text-white px-4 py-2 rounded-xl font-bold"
-          >
-            إرجاع
-          </button>
-        )}
+    {b.status !== "waiting" && (
+      <button
+        onClick={() => changeBookingStatus(b.id, "waiting")}
+        className="bg-slate-600 text-white px-4 py-2 rounded-xl font-bold"
+      >
+        إرجاع
+      </button>
+    )}
 
-        <button
-          onClick={() => handleDeleteBooking(b.id)}
-          className="bg-black border border-red-500 text-red-400 px-4 py-2 rounded-xl font-bold"
-        >
-          حذف نهائي
-        </button>
+    <button
+      onClick={() => handleDeleteBooking(b.id)}
+      className="bg-black border border-red-500 text-red-400 px-4 py-2 rounded-xl font-bold"
+    >
+      حذف نهائي
+    </button>
+  </>
+)}
       </div>
     </div>
   );
@@ -641,15 +645,18 @@ const topServiceName = (() => {
 
          <div className="flex items-center gap-2">
 
+  {role !== "staff" && (
   <a
     href="/admin/reports"
     className="bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black px-5 py-3 rounded-2xl font-black"
   >
     التقارير
   </a>
+)}
 
 
 
+ {role !== "staff" && (
   <button
     onClick={() => setSettingsOpen(true)}
     className="w-14 h-14 rounded-2xl border border-[#d4af37]/25 bg-white/[0.07] text-[#fff3b0] text-3xl font-black flex items-center justify-center"
@@ -657,6 +664,7 @@ const topServiceName = (() => {
   >
     ☰
   </button>
+)}
 
 </div>
         </div>
@@ -731,65 +739,69 @@ const topServiceName = (() => {
           )}
         </div>
 
-        <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-[2rem]">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-            <div>
-              <h2 className="text-2xl font-black text-[#fff3b0]">
-                عرض حجوزات تاريخ معين
-              </h2>
-              <p className="text-slate-400 text-sm mt-1">
-                اختار تاريخ مختلف عن اليوم عشان يظهر هنا
-              </p>
-            </div>
 
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-black/35 border border-white/10 p-4 rounded-2xl outline-none focus:border-[#d4af37]"
-            />
-          </div>
+       {role !== "staff" && (
+  <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-[2rem]">
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+      <div>
+        <h2 className="text-2xl font-black text-[#fff3b0]">
+          عرض حجوزات تاريخ معين
+        </h2>
 
-          {selectedDate && (
-            <>
-              <div className="grid md:grid-cols-2 gap-3 mb-4">
-                <input
-                  placeholder="بحث بالاسم أو رقم الموبايل أو الخدمة"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="bg-black/35 border border-white/10 p-4 rounded-2xl outline-none focus:border-[#d4af37]"
-                />
+        <p className="text-slate-400 text-sm mt-1">
+          اختار تاريخ مختلف عن اليوم عشان يظهر هنا
+        </p>
+      </div>
 
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="bg-black/35 border border-white/10 p-4 rounded-2xl outline-none focus:border-[#d4af37]"
-                >
-                  <option value="all">كل الحالات</option>
-                  <option value="waiting">منتظر</option>
-                  <option value="completed">تم</option>
-                  <option value="cancelled">ملغي</option>
-                </select>
-              </div>
+      <input
+        type="date"
+        value={selectedDate}
+        onChange={(e) => setSelectedDate(e.target.value)}
+        className="bg-black/35 border border-white/10 p-4 rounded-2xl outline-none focus:border-[#d4af37]"
+      />
+    </div>
 
-              {filteredSelectedDateBookings.length === 0 ? (
-                <p className="text-slate-400 text-center py-8">
-                  لا توجد حجوزات مطابقة
-                </p>
-              ) : (
-                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
-                  {filteredSelectedDateBookings.map(renderBookingCard)}
-                </div>
-              )}
-            </>
-          )}
+    {selectedDate && (
+      <>
+        <div className="grid md:grid-cols-2 gap-3 mb-4">
+          <input
+            placeholder="بحث بالاسم أو رقم الموبايل أو الخدمة"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="bg-black/35 border border-white/10 p-4 rounded-2xl outline-none focus:border-[#d4af37]"
+          />
 
-          {!selectedDate && (
-            <p className="text-slate-400 text-center py-8">
-              اختار تاريخ لعرض الحجوزات القديمة أو القادمة
-            </p>
-          )}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="bg-black/35 border border-white/10 p-4 rounded-2xl outline-none focus:border-[#d4af37]"
+          >
+            <option value="all">كل الحالات</option>
+            <option value="waiting">منتظر</option>
+            <option value="completed">تم</option>
+            <option value="cancelled">ملغي</option>
+          </select>
         </div>
+
+        {filteredSelectedDateBookings.length === 0 ? (
+          <p className="text-slate-400 text-center py-8">
+            لا توجد حجوزات مطابقة
+          </p>
+        ) : (
+          <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+            {filteredSelectedDateBookings.map(renderBookingCard)}
+          </div>
+        )}
+      </>
+    )}
+
+    {!selectedDate && (
+      <p className="text-slate-400 text-center py-8">
+        اختار تاريخ لعرض الحجوزات القديمة أو القادمة
+      </p>
+    )}
+  </div>
+)}
       </div>
     </div>
   );
