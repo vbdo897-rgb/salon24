@@ -828,11 +828,11 @@ const topServiceName = (() => {
   </div>
 
   <div className="text-[#d4af37] font-bold">
-    Eng: Abdo
+    Eng: Abdo Hesham
   </div>
 
   <div className="text-[#d4af37] font-bold">
-    Eng: Eslam
+    Eng: Eslam Said
   </div>
 </footer>
 
