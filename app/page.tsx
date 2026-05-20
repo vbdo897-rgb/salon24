@@ -462,6 +462,21 @@ export default function Home() {
           )}
         </div>
       </div>
+      <footer className="text-center text-xs text-slate-500 py-6 leading-7">
+  © 2026 Salon24. جميع الحقوق محفوظة.
+
+  <div className="mt-2">
+    تم تطوير النظام بواسطة
+  </div>
+
+  <div className="text-[#d4af37] font-bold">
+    Eng: Abdo Hesham
+  </div>
+
+  <div className="text-[#d4af37] font-bold">
+    Eng: Eslam Said
+  </div>
+</footer>
     </div>
   );
 }
