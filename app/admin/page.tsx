@@ -693,7 +693,7 @@ const topServiceName = (() => {
 )}
 
         </div>
-
+      {role !== "staff" && (
        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
   <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-3xl">
     <p className="text-slate-300">حجوزات اليوم</p>
@@ -737,6 +737,7 @@ const topServiceName = (() => {
     </p>
   </div>
 </div>
+)}
 
         <div className="bg-white/[0.07] border border-[#d4af37]/15 backdrop-blur-xl p-5 rounded-[2rem]">
           <h2 className="text-2xl font-black mb-4 text-[#fff3b0]">
@@ -818,6 +819,23 @@ const topServiceName = (() => {
   </div>
 )}
       </div>
+
+      <footer className="text-center text-xs text-slate-500 py-6 leading-7">
+  © 2026 Salon24. جميع الحقوق محفوظة.
+
+  <div className="mt-2">
+    تم تطوير النظام بواسطة
+  </div>
+
+  <div className="text-[#d4af37] font-bold">
+    المهندس عبده
+  </div>
+
+  <div className="text-[#d4af37] font-bold">
+    المهندس اسلام
+  </div>
+</footer>
+
     </div>
   );
 }
