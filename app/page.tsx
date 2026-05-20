@@ -462,7 +462,7 @@ export default function Home() {
           )}
         </div>
       </div>
-      <footer className="text-center text-xs text-slate-500 py-6 leading-7">
+      <footer className="text-center text-xs text-slate-500 py-10 leading-7 mt-8">
   © 2026 Salon24. جميع الحقوق محفوظة.
 
   <div className="mt-2">
