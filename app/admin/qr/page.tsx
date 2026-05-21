@@ -8,16 +8,16 @@ export default function QRPage() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen bg-[radial-gradient(circle_at_top,#18283f_0,#06111f_45%,#02040a_100%)] text-white p-4 flex items-center justify-center"
+      className="min-h-screen bg-[radial-gradient(circle_at_top,#18283f_0,#06111f_45%,#02040a_100%)] text-white p-4 flex items-center justify-center print:bg-white print:p-0"
     >
-      <div className="w-full max-w-lg rounded-[2rem] border border-[#d4af37]/20 bg-white/[0.07] backdrop-blur-xl p-6 text-center shadow-2xl print:bg-white print:text-black print:border-0 print:shadow-none">
+      <div className="w-full max-w-lg rounded-[2rem] border border-[#d4af37]/20 bg-white/[0.07] backdrop-blur-xl p-6 text-center shadow-2xl print:w-full print:max-w-none print:min-h-screen print:rounded-none print:bg-white print:text-black print:border-0 print:shadow-none print:flex print:flex-col print:items-center print:justify-center">
         <img
           src="/logo.png"
           alt="Salon24"
-          className="mx-auto w-28 h-28 object-cover rounded-3xl border border-[#d4af37]/30 mb-4"
+          className="mx-auto w-28 h-28 object-cover rounded-3xl border border-[#d4af37]/30 mb-4 print:w-24 print:h-24"
         />
 
-        <h1 className="text-5xl font-black tracking-[0.15em] bg-gradient-to-r from-[#fff3b0] via-[#d4af37] to-[#8a641c] bg-clip-text text-transparent print:text-black">
+        <h1 className="text-5xl font-black tracking-[0.15em] bg-gradient-to-r from-[#fff3b0] via-[#d4af37] to-[#8a641c] bg-clip-text text-transparent print:text-black print:bg-none">
           SALON 24
         </h1>
 
@@ -29,7 +29,7 @@ export default function QRPage() {
           Scan to book your appointment
         </p>
 
-        <div className="my-8 bg-white p-6 rounded-[2rem] inline-block border-4 border-[#d4af37] shadow-[0_20px_80px_rgba(212,175,55,0.25)]">
+        <div className="my-8 bg-white p-6 rounded-[2rem] inline-block border-4 border-[#d4af37] shadow-[0_20px_80px_rgba(212,175,55,0.25)] print:shadow-none print:my-6">
           <QRCodeCanvas
             value={bookingUrl}
             size={300}
@@ -44,7 +44,7 @@ export default function QRPage() {
           {bookingUrl}
         </p>
 
-        <div className="mt-8 rounded-3xl bg-black/35 print:bg-gray-100 border border-[#d4af37]/20 p-4">
+        <div className="mt-8 rounded-3xl bg-black/35 print:bg-gray-100 border border-[#d4af37]/20 p-4 print:w-full print:max-w-md print:mt-6">
           <p className="font-black text-lg text-[#fff3b0] print:text-black">
             احجز بسرعة بدون انتظار
           </p>
