@@ -1,6 +1,7 @@
 "use client";
 
 import { QRCodeCanvas } from "qrcode.react";
+
 export default function QRPage() {
   const bookingUrl = "https://salon24-beryl.vercel.app";
 
@@ -9,19 +10,29 @@ export default function QRPage() {
       dir="rtl"
       className="min-h-screen bg-[radial-gradient(circle_at_top,#18283f_0,#06111f_45%,#02040a_100%)] text-white p-4 flex items-center justify-center"
     >
-      <div className="w-full max-w-md rounded-[2rem] border border-[#d4af37]/15 bg-white/[0.07] backdrop-blur-xl p-6 text-center">
-        <h1 className="text-4xl font-black text-[#fff3b0] mb-3">
-          QR الحجز
+      <div className="w-full max-w-lg rounded-[2rem] border border-[#d4af37]/20 bg-white/[0.07] backdrop-blur-xl p-6 text-center shadow-2xl print:bg-white print:text-black print:border-0 print:shadow-none">
+        <img
+          src="/logo.png"
+          alt="Salon24"
+          className="mx-auto w-28 h-28 object-cover rounded-3xl border border-[#d4af37]/30 mb-4"
+        />
+
+        <h1 className="text-5xl font-black tracking-[0.15em] bg-gradient-to-r from-[#fff3b0] via-[#d4af37] to-[#8a641c] bg-clip-text text-transparent print:text-black">
+          SALON 24
         </h1>
 
-        <p className="text-slate-400 mb-6">
-          امسح الكود للحجز مباشرة
+        <p className="mt-3 text-xl font-black text-[#fff3b0] print:text-black">
+          امسح الكود واحجز ميعادك
         </p>
 
-        <div className="bg-white p-5 rounded-3xl inline-block">
+        <p className="text-slate-400 print:text-gray-600 mt-1">
+          Scan to book your appointment
+        </p>
+
+        <div className="my-8 bg-white p-6 rounded-[2rem] inline-block border-4 border-[#d4af37] shadow-[0_20px_80px_rgba(212,175,55,0.25)]">
           <QRCodeCanvas
             value={bookingUrl}
-            size={260}
+            size={300}
             bgColor="#ffffff"
             fgColor="#000000"
             level="H"
@@ -29,11 +40,31 @@ export default function QRPage() {
           />
         </div>
 
-        <p className="mt-6 text-[#fff3b0] break-all font-bold">
+        <p className="text-sm text-[#fff3b0] print:text-black break-all font-bold">
           {bookingUrl}
         </p>
 
-        <div className="flex gap-2 mt-6">
+        <div className="mt-8 rounded-3xl bg-black/35 print:bg-gray-100 border border-[#d4af37]/20 p-4">
+          <p className="font-black text-lg text-[#fff3b0] print:text-black">
+            احجز بسرعة بدون انتظار
+          </p>
+          <p className="text-slate-400 print:text-gray-600 text-sm mt-1">
+            اختار الخدمة والمعاد المناسب من خلال الموبايل
+          </p>
+        </div>
+
+        <footer className="text-center text-xs text-slate-500 print:text-gray-600 py-6 leading-7">
+          © 2026 Salon24. جميع الحقوق محفوظة.
+          <div className="mt-2">تم تطوير النظام بواسطة</div>
+          <div className="text-[#d4af37] print:text-black font-bold">
+            Eng: Abdo Hesham
+          </div>
+          <div className="text-[#d4af37] print:text-black font-bold">
+            Eng: Eslam Said
+          </div>
+        </footer>
+
+        <div className="flex gap-2 mt-4 print:hidden">
           <a
             href={bookingUrl}
             target="_blank"
