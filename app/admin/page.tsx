@@ -447,12 +447,6 @@ const topServiceName = (() => {
 
      <div className="flex flex-wrap gap-2 mt-3">
 
-  <a
-    href={`/admin/bookings/${b.id}`}
-    className="bg-[#d4af37] text-black px-4 py-2 rounded-xl font-black text-sm"
-  >
-    عرض التفاصيل
-  </a>
 
   <a
     href={`tel:${b.phone}`}
@@ -509,6 +503,13 @@ const topServiceName = (() => {
     >
       حذف نهائي
     </button>
+
+    <a
+    href={`/admin/bookings/${b.id}`}
+    className="bg-[#d4af37] text-black px-4 py-2 rounded-xl font-black text-sm"
+  >
+    عرض التفاصيل
+  </a>
   </>
 )}
       </div>
