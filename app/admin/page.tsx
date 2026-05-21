@@ -670,6 +670,14 @@ const topServiceName = (() => {
 )}
 
 
+<a
+  href="/admin/qr"
+  className="bg-white/[0.07] border border-[#d4af37]/20 text-[#fff3b0] px-5 py-3 rounded-2xl font-black"
+>
+  QR
+</a>
+
+
 
  {role !== "staff" && (
   <button
