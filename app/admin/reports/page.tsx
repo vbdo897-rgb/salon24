@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getBookings } from "@/lib/storage";
+import * as XLSX from "xlsx";
+
 import {
   BarChart,
   Bar,
@@ -38,7 +40,6 @@ export default function ReportsPage() {
   const [fromDate, setFromDate] = useState(currentMonth + "-01");
   const [toDate, setToDate] = useState(today);
   const [statusFilter, setStatusFilter] = useState("all");
-  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -52,6 +53,11 @@ export default function ReportsPage() {
   const getBookingTotal = (serviceText: string) => {
     const match = serviceText?.match(/الإجمالي:\s*(\d+)/);
     return match ? Number(match[1]) : 0;
+  };
+
+  const getPaymentMethod = (serviceText: string) => {
+    const match = serviceText?.match(/الدفع:\s*([^|]+)/);
+    return match ? match[1].trim() : "";
   };
 
   const filteredBookings = useMemo(() => {
@@ -150,9 +156,63 @@ export default function ReportsPage() {
 
   const statusColors = ["#4ade80", "#60a5fa", "#f87171"];
 
-const exportPDF = () => {
-  window.print();
-};
+  const statusText = (status: string) => {
+    if (status === "completed") return "تم";
+    if (status === "cancelled") return "ملغي";
+    return "منتظر";
+  };
+
+  const makeExcelRows = (list: any[]) => {
+    return list.map((b, index) => ({
+      "#": index + 1,
+      "اسم العميل": b.name || "",
+      "رقم الموبايل": b.phone || "",
+      "الخدمات": b.service || "",
+      "الإجمالي": getBookingTotal(b.service),
+      "طريقة الدفع": getPaymentMethod(b.service),
+      "التاريخ": b.date || "",
+      "المعاد": b.time ? formatTime(b.time) : "",
+      "الحالة": statusText(b.status),
+      "Booking ID": b.id || "",
+    }));
+  };
+
+  const exportPDF = () => {
+    window.print();
+  };
+
+  const exportFilteredExcel = () => {
+    if (filteredBookings.length === 0) {
+      alert("لا توجد حجوزات للتصدير");
+      return;
+    }
+
+    const rows = makeExcelRows(filteredBookings);
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Reports");
+
+    XLSX.writeFile(workbook, `Salon24-Reports-${fromDate}-to-${toDate}.xlsx`);
+  };
+
+  const exportAllBackupExcel = () => {
+    if (bookings.length === 0) {
+      alert("لا توجد حجوزات لعمل Backup");
+      return;
+    }
+
+    const rows = makeExcelRows(
+      [...bookings].sort((a, b) => b.date.localeCompare(a.date))
+    );
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "All Bookings");
+
+    XLSX.writeFile(workbook, `Salon24-Full-Backup-${today}.xlsx`);
+  };
 
   return (
     <div
@@ -174,10 +234,23 @@ const exportPDF = () => {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={exportPDF}
-              disabled={exporting}
-              className="bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black px-5 py-3 rounded-2xl font-black disabled:opacity-50"
+              className="bg-gradient-to-l from-[#fff3b0] via-[#d4af37] to-[#9a6b12] text-black px-5 py-3 rounded-2xl font-black"
             >
-              {exporting ? "جاري التحميل..." : "تحميل PDF"}
+              تحميل PDF
+            </button>
+
+            <button
+              onClick={exportFilteredExcel}
+              className="bg-green-500 text-black px-5 py-3 rounded-2xl font-black"
+            >
+              Excel للفترة
+            </button>
+
+            <button
+              onClick={exportAllBackupExcel}
+              className="bg-blue-500 text-white px-5 py-3 rounded-2xl font-black"
+            >
+              Backup كامل
             </button>
 
             <a
