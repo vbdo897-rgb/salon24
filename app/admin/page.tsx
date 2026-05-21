@@ -642,12 +642,12 @@ const topServiceName = (() => {
 )}
 
       <div className="max-w-6xl mx-auto space-y-5 relative z-10">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div className="flex items-center gap-4">
             <img
               src="/logo.png"
               alt="Salon24"
-              className="w-16 h-16 object-cover rounded-2xl border border-[#d4af37]/25 shadow-[0_15px_40px_rgba(212,175,55,0.18)]"
+              className="w-14 h-14 md:w-16 md:h-16 object-cover rounded-2xl border border-[#d4af37]/25 shadow-[0_15px_40px_rgba(212,175,55,0.18)]"
             />
 
             <div>
@@ -658,7 +658,7 @@ const topServiceName = (() => {
             </div>
           </div>
 
-         <div className="flex items-center gap-2">
+         <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 w-full md:w-auto">
 
   {role !== "staff" && (
   <a

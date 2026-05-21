@@ -33,7 +33,7 @@ export default function QRPage() {
         }
       `}</style>
 
-      <div className="w-full max-w-lg rounded-[2rem] border border-[#d4af37]/20 bg-white/[0.07] backdrop-blur-xl p-6 text-center shadow-2xl print:min-h-screen print:w-full print:max-w-none print:rounded-none print:border-0 print:shadow-none print:bg-[radial-gradient(circle_at_top,#18283f_0,#06111f_45%,#02040a_100%)] print:flex print:flex-col print:items-center print:justify-center">
+      <div className="w-full max-w-[360px] md:max-w-lg rounded-[2rem] border border-[#d4af37]/20 bg-white/[0.07] backdrop-blur-xl p-6 text-center shadow-2xl print:min-h-screen print:w-full print:max-w-none print:rounded-none print:border-0 print:shadow-none print:bg-[radial-gradient(circle_at_top,#18283f_0,#06111f_45%,#02040a_100%)] print:flex print:flex-col print:items-center print:justify-center">
         <img
           src="/logo.png"
           alt="Salon24"
@@ -55,7 +55,7 @@ export default function QRPage() {
         <div className="my-8 bg-white p-6 rounded-[2rem] inline-block border-4 border-[#d4af37] shadow-[0_20px_80px_rgba(212,175,55,0.25)]">
           <QRCodeCanvas
             value={bookingUrl}
-            size={300}
+            size={240}
             bgColor="#ffffff"
             fgColor="#000000"
             level="H"
