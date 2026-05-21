@@ -445,13 +445,22 @@ const topServiceName = (() => {
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <a
-          href={`tel:${b.phone}`}
-          className="bg-green-500 text-black px-4 py-2 rounded-xl font-bold"
-        >
-          اتصل
-        </a>
+     <div className="flex flex-wrap gap-2 mt-3">
+
+  <a
+    href={`/admin/bookings/${b.id}`}
+    className="bg-[#d4af37] text-black px-4 py-2 rounded-xl font-black text-sm"
+  >
+    عرض التفاصيل
+  </a>
+
+  <a
+    href={`tel:${b.phone}`}
+    className="bg-green-500 text-black px-4 py-2 rounded-xl font-bold"
+  >
+    اتصل
+  </a>
+
 
         <a
           href={`https://wa.me/2${b.phone}?text=${encodeURIComponent(
