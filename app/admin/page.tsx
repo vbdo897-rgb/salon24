@@ -69,33 +69,39 @@ const [editServicePrice, setEditServicePrice] = useState("");
     setServices(data);
   };
 
-  useEffect(() => {
-    const load = async () => {
+useEffect(() => {
+  const load = async () => {
+    try {
       const { data } = await supabase.auth.getUser();
 
       if (data.user) {
-  setLogged(true);
-}
+        setLogged(true);
+      }
 
-if (data.user?.email) {
-  const { data: adminData } = await supabase
-    .from("admins")
-    .select("role")
-    .eq("email", data.user.email)
-    .single();
+      if (data.user?.email) {
+        const { data: adminData } = await supabase
+          .from("admins")
+          .select("role")
+          .eq("email", data.user.email)
+          .single();
 
-  setRole(adminData?.role || "staff");
-}
+        setRole(adminData?.role || "staff");
+      }
 
       const s = await getSettings();
       setSettings(s);
 
       await loadBookings();
+      await loadServices();
+    } catch (err) {
+      console.error("ADMIN ERROR:", err);
+    } finally {
       setAuthLoading(false);
-    };
+    }
+  };
 
-    load();
-  }, []);
+  load();
+}, []);
 
 
 
@@ -516,7 +522,21 @@ const topServiceName = (() => {
     </div>
   );
 
-  if (authLoading || !settings) return null;
+ if (authLoading) {
+  return (
+    <div className="min-h-screen flex items-center justify-center text-white">
+      جاري التحميل...
+    </div>
+  );
+}
+
+if (!settings) {
+  return (
+    <div className="min-h-screen flex items-center justify-center text-red-400">
+      فشل تحميل الإعدادات
+    </div>
+  );
+}
 
   if (!logged) {
     return (
