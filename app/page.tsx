@@ -48,6 +48,9 @@ const formatTime = (time: string) => {
 
 export default function Home() {
   const minBookingDate = getNextAvailableDate();
+  
+  console.log("today", new Date().toString());
+console.log("minBookingDate", minBookingDate);
 
   const [tab, setTab] = useState<"book" | "track">("book");
   const [services, setServices] = useState<any[]>([]);
@@ -115,14 +118,17 @@ export default function Home() {
     return setMessage("❌ الحجز مغلق حاليًا");
   }
 
-  if (
+if (
   !name ||
   !phone ||
   servicesSelected.length === 0 ||
   !date ||
   !paymentMethod
-)
-
+) {
+  return setMessage(
+    "❌ من فضلك املأ كل البيانات واختار خدمة وطريقة دفع"
+  );
+}
   if (date < minBookingDate) {
     return setMessage("❌ الحجز متاح من أقرب يوم عمل فقط");
   }
