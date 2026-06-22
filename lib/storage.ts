@@ -7,15 +7,26 @@ export type Booking = {
   name: string;
   phone: string;
   service: string;
+
   date: string;
   time: string;
+
+  queue_number?: number;
+  estimated_time?: string;
+  barber_number?: number;
+
   status: BookingStatus;
 };
 
 export type Settings = {
   maxPerDay: number;
   bookingOpen: boolean;
-  timeSlots: string[];
+
+  queueDuration: number;
+  barbersCount: number;
+  workStart: string;
+  workEnd: string;
+
   adminPassword?: string;
 };
 
@@ -29,7 +40,14 @@ export type Service = {
 const defaultSettings: Settings = {
   maxPerDay: 20,
   bookingOpen: true,
-  timeSlots: ["12:00", "13:00", "14:00", "15:00"],
+
+  queueDuration: 45,
+  barbersCount: 2,
+
+  workStart: "12:00",
+  workEnd: "23:00",
+
+
   adminPassword: "1234",
 };
 
@@ -99,7 +117,16 @@ export const deleteService = async (id: string) => {
 export const getSettings = async (): Promise<Settings> => {
   const { data, error } = await supabase
     .from("settings")
-    .select("id, maxPerDay, bookingOpen, timeSlots, adminPassword")
+    .select(`
+id,
+maxPerDay,
+bookingOpen,
+adminPassword,
+queue_duration,
+barbers_count,
+work_start,
+work_end
+`)
     .eq("id", "main")
     .maybeSingle();
 
@@ -114,23 +141,41 @@ export const getSettings = async (): Promise<Settings> => {
   }
 
   return {
-    maxPerDay: data.maxPerDay ?? defaultSettings.maxPerDay,
-    bookingOpen: data.bookingOpen ?? defaultSettings.bookingOpen,
-    timeSlots: Array.isArray(data.timeSlots)
-      ? data.timeSlots
-      : defaultSettings.timeSlots,
-    adminPassword: data.adminPassword ?? defaultSettings.adminPassword,
-  };
+  maxPerDay: data.maxPerDay ?? defaultSettings.maxPerDay,
+  bookingOpen: data.bookingOpen ?? defaultSettings.bookingOpen,
+
+  queueDuration:
+    data.queue_duration ?? defaultSettings.queueDuration,
+
+  barbersCount:
+    data.barbers_count ?? defaultSettings.barbersCount,
+
+  workStart:
+    data.work_start ?? defaultSettings.workStart,
+
+  workEnd:
+    data.work_end ?? defaultSettings.workEnd,
+
+
+  adminPassword:
+    data.adminPassword ?? defaultSettings.adminPassword,
+};
 };
 
 export const saveSettings = async (settings: Settings) => {
   const { error } = await supabase.from("settings").upsert(
     {
-      id: "main",
-      maxPerDay: settings.maxPerDay,
-      bookingOpen: settings.bookingOpen,
-      timeSlots: settings.timeSlots,
-      adminPassword: settings.adminPassword ?? "1234",
+       id: "main",
+
+  maxPerDay: settings.maxPerDay,
+  bookingOpen: settings.bookingOpen,
+
+  queue_duration: settings.queueDuration,
+  barbers_count: settings.barbersCount,
+  work_start: settings.workStart,
+  work_end: settings.workEnd,
+
+  adminPassword: settings.adminPassword ?? "1234",
     },
     { onConflict: "id" }
   );
@@ -157,22 +202,75 @@ export const getBookings = async (): Promise<Booking[]> => {
   return data || [];
 };
 
+
+const addMinutes = (
+  time: string,
+  minutes: number
+) => {
+  const [h, m] = time.split(":").map(Number);
+
+  const date = new Date();
+
+  date.setHours(h);
+  date.setMinutes(m + minutes);
+
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
 export const addBooking = async (
   booking: Omit<Booking, "status" | "id">
 ) => {
-  const { error } = await supabase.from("bookings").insert([
-    {
-      name: booking.name,
-      phone: booking.phone,
-      service: booking.service,
-      date: booking.date,
-      time: booking.time,
-      status: "waiting",
-    },
-  ]);
+
+  const settings = await getSettings();
+
+  const { data: todayBookings } = await supabase
+    .from("bookings")
+    .select("*")
+    .eq("date", booking.date)
+    .neq("status", "cancelled");
+
+  const count = todayBookings?.length || 0;
+
+  const queueNumber = count + 1;
+
+  const barberNumber =
+    ((queueNumber - 1) % settings.barbersCount) + 1;
+
+  const roundIndex =
+    Math.floor(
+      (queueNumber - 1) / settings.barbersCount
+    );
+
+  const estimatedTime = addMinutes(
+    settings.workStart,
+    roundIndex * settings.queueDuration
+  );
+
+  const { error } = await supabase
+    .from("bookings")
+    .insert([
+      {
+        name: booking.name,
+        phone: booking.phone,
+        service: booking.service,
+
+        date: booking.date,
+        time: estimatedTime,
+
+        queue_number: queueNumber,
+        estimated_time: estimatedTime,
+        barber_number: barberNumber,
+
+        status: "waiting",
+      },
+    ]);
 
   if (error) {
-    console.log("addBooking error:", error.message);
+    console.log(error);
     throw error;
   }
 };

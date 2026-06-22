@@ -6,7 +6,6 @@ import {
   getBookings,
   getSettings,
   getServices,
-  isSlotBooked,
 } from "@/lib/storage";
 
 const paymentMethods = ["كاش", "فودافون كاش", "إنستاباي"];
@@ -48,7 +47,6 @@ export default function Home() {
   const [settings, setSettings] = useState({
     maxPerDay: 20,
     bookingOpen: true,
-    timeSlots: [] as string[],
   });
 
   const [bookings, setBookings] = useState<any[]>([]);
@@ -59,7 +57,6 @@ export default function Home() {
   const [servicesSelected, setServicesSelected] = useState<string[]>([]);
   const [paymentMethod, setPaymentMethod] = useState("");
   const [date, setDate] = useState(minBookingDate);
-  const [time, setTime] = useState("");
 
   const [trackPhone, setTrackPhone] = useState("");
   const [trackResult, setTrackResult] = useState<any>(null);
@@ -111,9 +108,13 @@ export default function Home() {
     return setMessage("❌ الحجز مغلق حاليًا");
   }
 
-  if (!name || !phone || servicesSelected.length === 0 || !date || !time || !paymentMethod) {
-    return setMessage("❌ من فضلك املأ كل البيانات واختار خدمة وطريقة دفع");
-  }
+  if (
+  !name ||
+  !phone ||
+  servicesSelected.length === 0 ||
+  !date ||
+  !paymentMethod
+)
 
   if (date < minBookingDate) {
     return setMessage("❌ الحجز متاح من أقرب يوم عمل فقط");
@@ -130,13 +131,6 @@ export default function Home() {
   try {
     setLoading(true);
 
-    const booked = await isSlotBooked(date, time);
-    if (booked) {
-      setMessage("❌ المعاد ده محجوز، اختار معاد تاني");
-      await loadBookings();
-      return;
-    }
-
     const servicesText = servicesSelected
       .map((serviceName) => {
         const item = services.find((s) => s.name === serviceName);
@@ -144,13 +138,13 @@ export default function Home() {
       })
       .join(" + ");
 
-    const bookingData = {
-      name,
-      phone,
-      service: `${servicesText} | الإجمالي: ${selectedTotal} جنيه | الدفع: ${paymentMethod}`,
-      date,
-      time,
-    };
+   const bookingData = {
+  name,
+  phone,
+  service: `${servicesText} | الإجمالي: ${selectedTotal} جنيه | الدفع: ${paymentMethod}`,
+  date,
+  time: "",
+};
 
     await addBooking(bookingData);
 
@@ -160,12 +154,23 @@ export default function Home() {
 
     await loadBookings();
 
-    setMessage(`✅ تم الحجز بنجاح - الإجمالي ${selectedTotal} جنيه`);
+   const allBookings = await getBookings();
+
+const myBooking = allBookings
+  .filter((b) => b.phone === phone)
+  .sort((a, b) => (b.queue_number || 0) - (a.queue_number || 0))[0];
+
+setMessage(
+  `✅ تم الحجز بنجاح
+رقم الدور: ${myBooking?.queue_number}
+الحلاق رقم: ${myBooking?.barber_number}
+الموعد المتوقع: ${myBooking?.estimated_time}`
+);
     setName("");
     setPhone("");
     setServicesSelected([]);
     setPaymentMethod("");
-    setTime("");
+    
   } catch {
     setMessage("❌ حصل خطأ أثناء الحجز");
   } finally {
@@ -360,42 +365,18 @@ export default function Home() {
                   if (isMonday(selected)) {
                     setMessage("❌ يوم الاتنين إجازة، اختار يوم تاني");
                     setDate(minBookingDate);
-                    setTime("");
+                  
                     return;
                   }
 
                   setDate(selected);
-                  setTime("");
+                
                   setMessage("");
                 }}
                 className="w-full p-4 rounded-2xl bg-black/35 border border-white/10 outline-none focus:border-[#d4af37]"
               />
 
-              <select
-                className="w-full p-4 rounded-2xl bg-black/35 border border-white/10 outline-none focus:border-[#d4af37] disabled:opacity-50"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                disabled={isSelectedDateFull || !settings.bookingOpen || isMonday(date)}
-              >
-                <option value="">اختار المعاد</option>
-
-                {settings.timeSlots.map((slot) => {
-                  const booked = bookings.some(
-                    (b) =>
-                      b.date === date &&
-                      b.time === slot &&
-                      b.status !== "cancelled"
-                  );
-
-                  return (
-                    <option key={slot} value={slot} disabled={booked}>
-                      {booked
-                        ? `${formatTime(slot)} - محجوز`
-                        : formatTime(slot)}
-                    </option>
-                  );
-                })}
-              </select>
+            
 
               <button
                 onClick={handleBooking}
@@ -449,7 +430,14 @@ export default function Home() {
                   <p>الاسم: {trackResult.name}</p>
                   <p>الخدمات: {trackResult.service}</p>
                   <p>اليوم: {trackResult.date}</p>
-                  <p>المعاد: {formatTime(trackResult.time)}</p>
+                  <p>رقم الدور: {trackResult.queue_number}</p>
+
+<p>الحلاق رقم: {trackResult.barber_number}</p>
+
+<p>
+الموعد المتوقع:
+{trackResult.estimated_time}
+</p>
                 </div>
               )}
             </div>
