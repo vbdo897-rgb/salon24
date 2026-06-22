@@ -71,31 +71,54 @@ const [editServicePrice, setEditServicePrice] = useState("");
 
 useEffect(() => {
   const load = async () => {
+    console.log("START LOAD");
+
     try {
-      const { data } = await supabase.auth.getUser();
+      console.log("GET USER");
+
+      const { data, error } = await supabase.auth.getUser();
+
+      console.log("USER RESULT:", data, error);
 
       if (data.user) {
         setLogged(true);
       }
 
       if (data.user?.email) {
-        const { data: adminData } = await supabase
+        console.log("GET ADMIN ROLE");
+
+        const { data: adminData, error: adminError } = await supabase
           .from("admins")
           .select("role")
           .eq("email", data.user.email)
           .single();
 
+        console.log("ADMIN RESULT:", adminData, adminError);
+
         setRole(adminData?.role || "staff");
       }
 
+      console.log("GET SETTINGS");
+
       const s = await getSettings();
+
+      console.log("SETTINGS RESULT:", s);
+
       setSettings(s);
 
+      console.log("GET BOOKINGS");
+
       await loadBookings();
+
+      console.log("GET SERVICES");
+
       await loadServices();
+
+      console.log("DONE");
     } catch (err) {
       console.error("ADMIN ERROR:", err);
     } finally {
+      console.log("FINALLY RUN");
       setAuthLoading(false);
     }
   };
