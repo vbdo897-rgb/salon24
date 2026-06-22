@@ -17,13 +17,20 @@ const isMonday = (dateStr: string) => {
 
 const getNextAvailableDate = () => {
   const d = new Date();
+
+  d.setHours(12, 0, 0, 0);
+
   d.setDate(d.getDate() + 1);
 
   while (d.getDay() === 1) {
     d.setDate(d.getDate() + 1);
   }
 
-  return d.toISOString().split("T")[0];
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 };
 
 const formatTime = (time: string) => {
